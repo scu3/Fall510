@@ -1,0 +1,261 @@
+---
+title: "HW4"
+author: "Sean Underwood"
+date: "Sunday, September 27, 2015"
+output: html_document
+---
+
+#__Vectors__
+
+##__Problem 1:__
+
+####__(1a):__
+
+```{r}
+# we create a the vector (1,2,3,. . .,19,20).  By putting a c outside of the parentheses, we are indicating that we are creating a vector.  We can create a sequence by using the start:stop construction where start is the first number of our sequence and stop is the last.  Note, the problem did not ask us to assign this vector to a variable.
+
+c(1:20)
+
+```
+
+####__(1b):__
+```{r}
+# We create a vector (20,19,18...,2,1) using the c() function. We will use the same start:stop construnction to generate our sequence. Since the start value is greater than the stop value, R recognizes that this is a decreasing sequence (20,19,18,...,2,1)
+
+c(20:1)
+
+```
+####__(1c):__
+```{r}
+# We create a vector (1,2,3...19,20,19,...2,1) using the  c() function. I chose to use the seq() function twice to generate this vector.  The seq() function accepts 5 arguements (from,to,by,length.out, along.with).  We will only be using two of these aguements (from,to). 
+
+c(seq(1,19),seq(20,1))
+
+```
+####__(1d):__
+```{r}
+# We create a vector (4,6,3) using the c() function.  The problem asks us to assign this vector to the name tmp.  We will use R's variable assignment operateor <- to accomplish this
+
+tmp <- c(4,6,3)
+
+```
+####__(1e):__
+```{r}
+# We create the vector (4,6,3,4,6,3...4,6,3) where there are 10 occurrences of 4.  To accomplish this task, we use the rep(x,times) function.  The first arguement can be a vector of any mode.  The second arguement dictates how many times x is repeated.  We use c() to ceate the vector.
+
+c(rep(c(4,6,3),10))
+
+```
+####__(1f):__
+```{r}
+# We create the vector (4,6,3,4,6,3...4,6,3,4) where there are 11 occurrences of 4, 10 occurrences of 6, and 10 occurrences of 3. Similar to 1c, we create our vector using the c() function.  To get a sequence of 11 repeates of 4,6,3 we use the rep(c(4,6,3),11) function where 11 tells R to repeat the first arguement 11 times.  The problem is that this results in a vector with 33 elements.  Our vector has the 11 occurrences of 4 that we desired but it also has 11 occurrences of 6 and 11 occurences of 3.  To remedy this we add the [-32:-33] at the end of the statement.  This [start,stop] syntax operates on index positions.  It is worth noting that in R, the first index position is 1 (not 0) and the stop position is included in the operation.  The negative sign indicates to R that we want to remove the items in index position 32 through 33 (inlcusive).
+
+c(rep(c(4,6,3),11))[-32:-33]
+```
+###__1(g):__
+```{r}
+# We create the vector (4,4,...4,6,6,...6,3,3,...3) where there are 10 occurrences of 4, 20 occurrences of 6, and 30 occurrences of 3.  To accomplish this, we employ the c() function to create the vector.  We will call the rep(x,times) function 3 separate times where x will be the vectors c(4), c(6), and C(3) that we want to create and times will be 10,20,and 30, respectively, to indicate how many times we want each vector repeated.
+
+c(rep(c(4),10),rep(c(6),20),rep(c(3),30))
+
+```
+##__Problem 2:__
+```{r}
+# We create the vector of the values of exp(x) * cos(x) where at x = 3,3.1,3.2,...,5.9,6.  To do this we will build vectors for exp(x) and cos(x) to operate on.  R allows us to directly manipulate vectors using standard mathematic operations.  When we apply the mathematical operator to the vector, the operator performs its operation on each element of the vector and returns a new vector.  Our vector x is a sequence that starts with 3, ends with 6, and increments of 0.1.  We will use the sequence function seq(from,to,by).  
+
+exp(c(seq(3,6,.1)))*cos(seq(3,6,.1))
+```
+##__Problem 3:__
+###__3(a):__
+```{r}
+# we create the vector (0.1^3 * 0.2^1, 0.1^6 * 0.2^4,...,0.1^36 * 0.2^34).  We can do this in one step but I am chosing to use several steps to help with clarity.
+# we create a vector containing 12 occurrences of 0.1.  We use the c() to create the vector and rep(x,times) function to repeat our x =0.1 twelve times.  We use <- to make the variable assignment.
+
+vect_0.1<-c(rep(c(.1),12))
+
+# we create a vector containing 12 occurrences of 0.2.  We use the c() to create the vector and rep(x,times) function to repeat our x =0.2 twelve times.  We use <- to make the variable assignment.
+
+vect_0.2<-c(rep(c(.2),12))
+
+# we create a vector of exponents that we will use to exponentiate our vect_0.1.  We use the c() to create the vector and seq(from,to,by) to create our desired sequence of (3,6,9,...33,36).  We use <- to make the variable assignment.
+
+vect_exp_0.1 <- c(seq(3,36,3))
+
+# we create a vector of exponents that we will use to exponentiate our vect_0.2.  We use the c() to create the vector and seq(from,to,by) to create our desired sequence of (1,2,7,...31,34).  We use <- to make the variable assignment.
+
+vect_exp_0.2 <- c(seq(1,34,3))
+
+# now we will combine our 4 vectors into one by using R's vector arithmetic functioniality that we discussed before. R automatically distributes each mathematical operation without us having to build a loop.
+
+c(vect_0.1^vect_exp_0.1 * vect_0.2^vect_exp_0.2)
+
+# I am not sure if the assignment requires me to build this all in one line.  Just in case that was your expectation, here it is all in one statement:
+
+c(( (c(rep(c(.1),12)))^(c(seq(3,36,3)))) * ((c(rep(c(.2),12))^(c(seq(1,34,3))))))
+
+```
+###__3(b):__
+```{r}
+# We need to build the vector (2, (2^2)/2, (2^3)/3,...,(2^25)/25).  For purposes of clarity, I am going to break this down into several steps of building vectors to help us build up our final vector.  We have a couple of things going on here.  First, the numerator is following the sequence 2^n where n goes from 1 to 25.  Second, the denominator is following the sequence n where n goes from 1 to 25.
+
+# Our first vector will be our n_vector.  It will be the vector with elements of 1 to 25 that increment by 1.  We use c() to create the vector and seq(from,to,by) to create our sequence. This vector will help us with our exponents and demoninator.  We use <- to make the variable assignment.
+
+n_vector <- c(seq(1,25,1))
+
+# Our second vector is for our numerator.  We will uses c() to create the vector, rep(x,times) to repeat 2, 25 times, and we use <- to make the variable assignment.
+
+numerator_vector <- c(rep(c(2),25))
+
+# Now we use the mathematical properties of vectors in R and construct our final vector.  We use c() to create the vector.
+
+c(((numerator_vector)^n_vector)/n_vector)
+```
+##__Problem 4:__
+###__4(a):__
+```{r}
+# we need to calculate the sum of (i^3 + 4i^2) for i=10 to i=100.  Since i from 10 to 100 is simply a sequence of values 10 to 100, we can generate this sequence by calling 10:100.  We will use the sum function to sum to values of the vector that we create that performs i^3 + 4i^2 for each value of i.
+
+sum((10:100)^3 + 4*(10:100)^2)
+
+```
+###__4(b):__
+```{r}
+# we need to calculate the sum of (2^i)/i + (3^i)/i^2 for values of 1 <= i <=25.  We will use the same method as in part a.  To make the code a little easier to read, we will create a vector containing our index values.  We then create a new vector by using R's arithmetic functionality.  We will call the sum function to sum up the values of our vector.
+
+i <- c(1:25)
+sum( ((2^i)/i) + (3^i)/i^2 )
+
+```
+
+##__Problem 5:__
+###__5(a):__
+```{r}
+# We will use the paste() function to create the following character vectors: ("label 1", "label 2", ..., "label 30").  We will have a single space between the label and the number.  The paste function accepts the following arguements: The first arguement is one or more R objects to be converted to character vectors.  Sep allows you to separate each element by something other than the default single space.  In this case we will use the default.  Collapse allows us to turn all the elements into a single character string.  The arguement "label",1:30 will generate 30 occurrences of "label" each followed by a number starting with 1 and incrementing by 1.
+
+ paste("label",1:30)
+```
+###__5(b):__
+```{r}
+# Our task is to create ("fn1","fn2", ...,"fn30").  The big difference between this and part 5a is that there is no space between the letters and the number.  We could have used the paste0() function to create the character vector ("fn1","fn2",...,"fn30").  This function works the same as paste() function except it removes the space between the fn and the number.  Since we were asked to use the paste() function we will set our sep arguemnt equal to '' to remove the space.
+
+paste("fn",1:30,sep='')
+
+```
+
+##__Problem 6:__
+```{r}
+# As the problem asked, we are going to start with executing the following lines of code which are chosen with replacement from the integers 0,1,...,999.  Both vectors have a length of 250.  The sample(x,size,replace=False,prob=Null) function takes a sample of the specified size (non-negative integers) from the elements of x (a vector) using either with or without replacement.  In our example below, our sample will be of size = 250 from the sequence 0:999.  We opt to sample with replacement (replace = T).  The prob arguement can be used to give a vector weights.  We will use the default value of Null.  The seed is a vector used to initalize th psuedorandom number generator. 
+
+set.seed(50)
+xVec <- sample(0:999,250,replace=T)
+yVec <- sample(0:999,250,replace=T)
+
+```
+###__6(a):__
+```{r}
+# We create the vector (y2 - x1,..., yn-x(n-1)) where x1,x2,...xn are the values of the xVec and y1,y2,...,yn are the values of yVec.  To do this we can use the arithmetic properties of vectors that R gives us.  We have previously talked about how R performs subtraction,additon,multiplication, etc on an element by element basis.  For example, suppose that you have two simple vectors A <- c(x1,x2,x3) and B <- c(y1,y2,y3).  Then A-B is the vector (x1-y1,x2-y2,x3-y3).  For this problem, we use slicing to give us the vectors that we need to perform subtraction on.  The first vector we need takes values y2:y250 so we slice into our yVec and get the values in index poistions 2 through 250.  Likewise, for our second vector, we need the vector taking the values x1:x249.  We slice into our xVec and get the values in index positions 1 through 249.
+
+yVec[2:250]-xVec[1:249]
+```
+###__6(b):__
+```{r}
+#We create the vector (sin(y1)/cos(x2), sin(y2)/cos(x3),...,Sin(yn-1)/cons(xn)).  We are going to do this using the arithmetic properties of R.  As explained in part 6(a), since R performs the mathematical operations on an element by element basis, we can create a new vector by dividing one vector by another vector.  In this case, we want to divide the vector (sin(y1),sin(y2),...sin(yn)) by the vector (cos(x2),cos(x3),...,cos(xn)).  Our numerator can be created by slicing into our yVec and getting the values in index positions 1 through 249, and taking the sine of those values.  Our denominator can be obtained by slicing into our xVec and getting values 2 through 250 and taking the cosine of those values.
+
+sin(yVec[1:249])/cos(xVec[2:250])
+
+```
+###__6(c):__
+```{r}
+#We need to create the vector ( (x1) + (2*x2)- (x3), (x2) + (2*x3) - (x4)...,(xn-2) + (2xn-1) - (xn) ).  This means that the first member of each element will range from x1 through x248.  The second memeber of each element will range from x2 through x249.  And the third member will range from x3 through x250.  We will use the seq(from,to,by) function to build the list of indices that we will use to slice into our xVec.
+
+xVec[seq(1,248)] + 2*xVec[seq(2,249)] - xVec[(seq(3,250))]
+
+
+```
+###__6(d):__
+```{r}
+# we need to calculate the sum of exp(-Xi+1)/(Xi)+10 from i=1 to i=n-1.  For purposes of clarity, we will break this down into steps.  Our numerator will be the vector of exp(-xj) where j = i+1 so j will take values of 2 through 250.  Our denomiator is xi + 10.  Then i will take the values 1 through 249.  We will use the sum() function to add up all of the values of the vector that we create by dividing our numerator vector by our denominator vector.
+
+# the numerator vector
+
+vect_num = exp(-1 * xVec[2:250])
+
+# the denominator vector
+vect_dum = xVec[1:249] + 10
+
+# the sum of our quotient
+
+sum(vect_num/vect_dum)
+
+```
+###__7(a):__
+```{r}
+# we want to pick out the values of yVec which are > 600.  R allows us to slice into yVec and call for all of the elements in yVec > 600 by replacing the index syntax that we have been using (like 1:250) with yVec>600
+
+yVec[yVec>600]
+```
+
+
+###__7(b):__
+```{r}
+# we will create a vector containing the indices of the values of yVec >600 using the which(x,arr.ind=TRUE) function.  In the which() function, x must be a logical vector (a vector containing only TRUE or FALSE).  By writing yVec>600 we have created a logical vector (as seen in 7a).  The arr.ind arguement lets us return the array indecies.
+
+which(yVec>600,TRUE)
+```
+
+
+
+###__7(c):__
+```{r}
+# we need to return the values in xVec which correspond to the values in yVec which are >600 (by correspond we mean the same index position),  We will build on the answers of 7a and 7b.  We can slice into xVec and ask for values at certain index positions to be returned.  The problem in 7b gave us the indices that we want.  Then the vaules of xVec that correspond to the values of yVec that are >600 is xVec[which(yVec>600,TRUE)]
+
+xVec[which(yVec>600,TRUE)]
+
+
+```
+###__7(d):__
+```{r}
+# We need to create the vector where the first element is the square root of the absolute value of the difference of x1 and the mean of xVec.  The second value is the same calculation but replacing x1 with x2.  The third uses x3 and so one.  To accomplish this we are going to use several different functions.  First, the abs(x) function will return the absolute value of x.  Next, the sqrt(x) function will return the square root of x.  And finally, the mean(xVec) will return the mean of xVec.  We will nest these function calls to give us the outcome that we desire.  First we want the difference, then the absolute value, then the square root.
+
+c(sqrt(abs(xVec - mean(xVec))))
+
+
+```
+###__7(e):__
+```{r}
+# we need to find the number of values in yVec that are within 200 of the maximum value of the terms in yVec.  To put this another way, we want to count the number of elements of yVec > abs(max(yVec) - 200).  This calculation would compare every value of yVec to the max value of yVec plus or minus 200.  If we took this calculation and performed the which() function on it to determine the index positions of the elements satisfying this criteria, we would have a vector of length equal to the number of values in yVec that are within 200 of the max value of yVec.  By calling the length() function on this last result, R will return the count that we are looking for.
+
+length(which(yVec > abs(max(yVec)-200),TRUE))
+
+```
+###__7(f):__
+```{r}
+# we need to find the count of numbers in xVec that are divisible by 2.  Using a very similar call to problem 7e, we first perform the logical operation of testing if the element divided by 2 equals zero.  If it does, we use the which function to return a vector of the indices fitting this criteria.  We can then call the length function on that vector to give us the count.
+length(which(xVec%%2==0,TRUE))
+```
+
+
+###__7(g):__
+```{r}
+# we need to sort both xVec in the order of increasing values in yVec.  This could be cumbersome but R provides us with an order() function that allows us to sort one object in the order of another object.
+
+xVec[order(yVec)]
+```
+###__7(h):__
+```{r}
+# we are asked to pick out the elements of yVec at index positions 1,4,7,10,13.  We will use the same strategy here that we have used in previous problems.  We can slince into yVec and ask for the values at certain index positions to be returned.  We will use the seq(from,to,by) function to generate the list of indices that we desire.
+
+yVec[seq(1,250,3)]
+
+```
+###__8:__
+```{r}
+# we want to calculate 1 + 2/3 + (2*4)/(3*5) + ... + (2*4*...*38)/(3*5*...*39).  If you take the first term of this sequence away, the numerator becomes the cumulative product of the sequence 2,4,6,...,38.  The denominator becomes the cumulative product of the sequence 3,5,7,...,39.  The cumprod() function accepts a vector and multiplies each term by the product of the preceeding terms.  Then the answer to our question is that we want the sum of 1 + the cumulative product of our numerator/ the cumulative product of our denominator.
+
+sum(1 + cumprod(seq(2,38,2))/cumprod(seq(3,39,2)))
+
+```
+
+
+
+
