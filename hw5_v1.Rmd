@@ -1,0 +1,92 @@
+---
+title: "HW5"
+author: "Sean Underwood"
+date: "Wednesday, October 07, 2015"
+output: html_document
+---
+
+####__Problem 1:__
+
+```{r}
+# In order to complete the assignment, we first load the necessary packages and data
+require(ggplot2,quietly=TRUE)
+require(stats)
+require(graphics)
+require(grid)
+data(diamonds)
+
+# We will create a function that will generically extract all numeric columns from any dataframe  so the method can be applied to any dataframe
+
+numericDF <- function(x)
+  {
+    newDF <- x[sapply(x,is.numeric)]
+    return(newDF)
+  }
+
+# Now we will use our new function to extract the numeric columns of the diamonds data set
+
+numeric_diamonds <- numericDF(diamonds)
+# We check the strucuture of our new numeric column dataframe
+str(numeric_diamonds)
+
+```
+
+####__Problem 2:__
+```{r}
+
+# We will create a new data frame that contains each pair of variable in the first column in a string separated by a -.  We will be pulling data from the numeric version of diamonds.
+
+xdf <- data.frame()
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    for (j in seq_len(ncol(numeric_diamonds))){
+      if (j > i){
+        xdf[counter,1]= paste(names(numeric_diamonds[i]),names(numeric_diamonds[(j)]),sep="-")
+        counter <- counter + 1
+      }
+    }   
+  }
+}
+
+# Now we will fill the second column of our new data frame with the pearson correlation coefficeint corresponding to the variable pair in the first column.  For example, for the row in column 1 that has 'carat-depth', we will calculate the correlation coefficient on the entire row 1 and row 2.  We will return that integer value in row 1 column 2.
+
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    for (j in seq_len(ncol(numeric_diamonds))){
+      if (j > i){
+        xdf[counter,2]= cor(numeric_diamonds[i],numeric_diamonds[j])
+        counter <- counter + 1
+      }
+    }   
+  }
+}
+
+
+# Add names to our two columns of data
+names(xdf)<-c("Variables","Corr_Coeff")
+
+```
+
+####__Problem 3:__
+```{r}
+# build a basic plot in ggplot2
+
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    for (j in seq_len(ncol(numeric_diamonds))){
+      if (j > i){
+        h<-ggplot(numeric_diamonds, aes_string(colnames(numeric_diamonds)[i], colnames(numeric_diamonds)[j])) + geom_point() + ggtitle(sprintf('%s\nPearson Correlation Coefficient=%s', xdf[counter,1],xdf[counter,2]))
+        counter <- counter + 1
+        print(h)
+      }
+    }
+  }
+}
+   
+
+
+
+```

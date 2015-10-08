@@ -1,0 +1,136 @@
+---
+title: "HW5"
+author: "Sean Underwood"
+date: "Wednesday, October 07, 2015"
+output: html_document
+---
+
+####__Problem 1:__
+
+```{r}
+# In order to complete the assignment, we first load the necessary packages and data
+require(ggplot2,quietly=TRUE)
+require(stats)
+require(graphics)
+data(diamonds)
+
+# We will create a function that will generically extract all numeric columns from any dataframe  so the method can be applied to any dataframe
+
+numericDF <- function(x)
+  {
+    newDF <- x[sapply(x,is.numeric)]
+    return(newDF)
+  }
+
+# Now we will use our new function to extract the numeric columns of the diamonds data set
+
+numeric_diamonds <- numericDF(diamonds)
+# We check the strucuture of our new numeric column dataframe
+str(diamonds_num)
+
+```
+
+####__Problem 2:__
+```{r}
+
+# We will create a new data frame that contains each pair of variable in the first column in a string separated by a -.  We will be pulling data from the numeric version of diamonds.
+
+xdf <- data.frame()
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    for (j in seq_len(ncol(numeric_diamonds))){
+      if (j > i){
+        xdf[counter,1]= paste(names(numeric_diamonds[i]),names(numeric_diamonds[(j)]),sep="-")
+        counter <- counter + 1
+      }
+    }   
+  }
+}
+
+# xdf[1,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[2]),sep="-")
+# xdf[2,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[3]),sep="-")
+# xdf[3,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[4]),sep="-")
+# xdf[4,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[5]),sep="-")
+# xdf[5,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[6]),sep="-")
+# xdf[6,1]=paste(names(numeric_diamonds[1]),names(numeric_diamonds[7]),sep="-")
+# xdf[7,1]=paste(names(numeric_diamonds[2]),names(numeric_diamonds[3]),sep="-")
+# xdf[8,1]=paste(names(numeric_diamonds[2]),names(numeric_diamonds[4]),sep="-")
+# xdf[9,1]=paste(names(numeric_diamonds[2]),names(numeric_diamonds[5]),sep="-")
+# xdf[10,1]=paste(names(numeric_diamonds[2]),names(numeric_diamonds[6]),sep="-")
+# xdf[11,1]=paste(names(numeric_diamonds[2]),names(numeric_diamonds[7]),sep="-")
+# xdf[12,1]=paste(names(numeric_diamonds[3]),names(numeric_diamonds[4]),sep="-")
+# xdf[13,1]=paste(names(numeric_diamonds[3]),names(numeric_diamonds[5]),sep="-")
+# xdf[14,1]=paste(names(numeric_diamonds[3]),names(numeric_diamonds[6]),sep="-")
+# xdf[15,1]=paste(names(numeric_diamonds[3]),names(numeric_diamonds[7]),sep="-")
+# xdf[16,1]=paste(names(numeric_diamonds[4]),names(numeric_diamonds[5]),sep="-")
+# xdf[17,1]=paste(names(numeric_diamonds[4]),names(numeric_diamonds[6]),sep="-")
+# xdf[18,1]=paste(names(numeric_diamonds[4]),names(numeric_diamonds[7]),sep="-")
+# xdf[19,1]=paste(names(numeric_diamonds[5]),names(numeric_diamonds[6]),sep="-")
+# xdf[20,1]=paste(names(numeric_diamonds[5]),names(numeric_diamonds[7]),sep="-")
+# xdf[21,1]=paste(names(numeric_diamonds[6]),names(numeric_diamonds[7]),sep="-")
+
+# Now we will fill the second column of our new data frame with the pearson correlation coefficeint corresponding to the variable pair in the first column.  For example, for the row in column 1 that has 'carat-depth', we will calculate the correlation coefficient on the entire row 1 and row 2.  We will return that integer value in row 1 column 2.
+
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    for (j in seq_len(ncol(numeric_diamonds))){
+      if (j > i){
+        xdf[counter,2]= cor(numeric_diamonds[i],numeric_diamonds[j])
+        counter <- counter + 1
+      }
+    }   
+  }
+}
+
+
+
+
+# xdf[1,2]=cor(numeric_diamonds[1],numeric_diamonds[2])
+# xdf[2,2]=cor(numeric_diamonds[1],numeric_diamonds[3])
+# xdf[3,2]=cor(numeric_diamonds[1],numeric_diamonds[4])
+# xdf[4,2]=cor(numeric_diamonds[1],numeric_diamonds[5])
+# xdf[5,2]=cor(numeric_diamonds[1],numeric_diamonds[6])
+# xdf[6,2]=cor(numeric_diamonds[1],numeric_diamonds[7])
+# xdf[7,2]=cor(numeric_diamonds[2],numeric_diamonds[3])
+# xdf[8,2]=cor(numeric_diamonds[2],numeric_diamonds[4])
+# xdf[9,2]=cor(numeric_diamonds[2],numeric_diamonds[5])
+# xdf[10,2]=cor(numeric_diamonds[2],numeric_diamonds[6])
+# xdf[11,2]=cor(numeric_diamonds[2],numeric_diamonds[7])
+# xdf[12,2]=cor(numeric_diamonds[3],numeric_diamonds[4])
+# xdf[13,2]=cor(numeric_diamonds[3],numeric_diamonds[5])
+# xdf[14,2]=cor(numeric_diamonds[3],numeric_diamonds[6])
+# xdf[15,2]=cor(numeric_diamonds[3],numeric_diamonds[7])
+# xdf[16,2]=cor(numeric_diamonds[4],numeric_diamonds[5])
+# xdf[17,2]=cor(numeric_diamonds[4],numeric_diamonds[6])
+# xdf[18,2]=cor(numeric_diamonds[4],numeric_diamonds[7])
+# xdf[19,2]=cor(numeric_diamonds[5],numeric_diamonds[6])
+# xdf[20,2]=cor(numeric_diamonds[5],numeric_diamonds[7])
+# xdf[21,2]=cor(numeric_diamonds[6],numeric_diamonds[7])
+
+# Add names to our two columns of data
+names(xdf)<-c("Variables","Corr_Coeff")
+
+```
+
+####__Problem 3:__
+```{r}
+# build a basic plot in ggplot2
+
+g<- ggplot(xdf,aes(x=Variables,y=Corr_Coeff)) + geom_point()
+
+
+
+```
+
+
+xdf <- data.frame()
+counter <- 1
+for (i in seq_len(ncol(numeric_diamonds))){
+  if (i < ncol(numeric_diamonds)){
+    xdf[counter,1]= paste(names(numeric_diamonds[i]),names(numeric_diamonds[(i+1)]),sep="-")
+    counter <- counter + 1
+  }
+}
+

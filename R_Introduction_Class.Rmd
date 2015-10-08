@@ -1,0 +1,71 @@
+---
+title: "IntroductionClass"
+output: html_document
+---
+
+
+__Notice how the beginning made this bold__
+and this is not bold
+
+```{r}
+print
+class(print)
+```
+ctrl enter executes a line of code
+highlighting multiple lines and hitting ctrl enter executes them all
+
+```{r}
+methods(print)
+?print
+?print.ggplot
+
+```
+
+```{r}
+#load grid package
+require("grid")
+
+require('ggplot2')
+#bring diamonds data into memory
+data(diamonds)
+str(diamonds)
+
+#plot relationship of carat on price by color
+carat_prc <- ggplot(diamonds, aes(x=carat,y=price))
+carat_prc <- carat_prc + labs(title="diamonds - Weight to Price by Color") +
+  theme(plot.title = element_text(size = rel(2), color = "blue")) +
+  labs(x = "Weight", y = "Price") + geom_point(aes(color = factor(color)))
+
+print(carat_prc)
+# carat_prc is type ggplot 
+str(carat_prc)
+
+help('[[')  # gives you help on double bracket
+
+example(ggplot)
+
+example(grid)
+
+objects()
+# vectors
+x <- c(10.4,5.6,3.1,6.4,21.7)
+
+1/x
+
+newx <- c(x,0,x)
+print(newx)
+
+var(x)
+myvar <- sum((x-mean(x))^2/(length(x)-1))
+
+print(myvar)
+
+
+
+
+
+```
+
+
+you will see number 96 is ggplot
+
