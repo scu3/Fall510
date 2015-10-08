@@ -1,0 +1,153 @@
+---
+title: "HW5"
+author: "Sean Underwood"
+date: "Wednesday, October 07, 2015"
+output: html_document
+---
+
+####__Problem 1:__
+
+```{r}
+# In order to complete the assignment, we first load the necessary packages and data
+require(ggplot2,quietly=TRUE)
+require(stats)
+require(graphics)
+require(grid)
+data(diamonds)
+
+# We will create a function called numericDF(x) that will generically extract all numeric columns from any dataframe x.  This function has one arguement x which should be class data frame.  
+
+numericDF <- function(x)
+{   # numericDF(x) is a function that accepts a single arguement - an arbitrary dataframe x, and returns a new data frame containing only columns of numeric data
+
+    # we use the sapply function to loop through our input
+    # we use the is.numeric test to test whether each column of the input is numeric
+    # we assign only the numeric columns of our input to a new variable newDF which is a data frame
+    newDF <- x[sapply(x,is.numeric)]
+    # we the return call to supply the output of our function back to the user
+    return(newDF)
+  }
+
+# Now we will use our new function to extract the numeric columns of the diamonds data set by calling numericDF() on the diamonds data frame and assigning the results to a new variable numeric_diamonds
+
+numeric_diamonds <- numericDF(diamonds)
+
+# since these data frames can be huge, we will use the head function to display the first 7 rows of data.  Additionally, we will display the strucutre of our new data frame using the str() function
+head(numeric_diamonds)
+str(numeric_diamonds)
+
+```
+
+####__Problem 2:__
+```{r}
+
+# We are going to build a function called coeffDF that utilizes the function that we built in part 1.  Our new function will (1) Accept a data frame as input (2) Run the numericDF() function on the input (3) Our coeffDF() function will then create a new data frame that will have 2 columns.  In the first column will contain each pair of variables in the form of a string separated by a -.  Column 2 will contain the Pearson Correlation Coefficient of the columns of data represented in column 1. 
+
+coeffDF <- function(x)
+{ # coeffDF(x) is a function that accepts a single arguement- an arbitrary data frame x, and returns a new data frame containing 2 columns: Column 1- contains each pair of variables in the form of a string separated by a -, Column 2- contains the Pearson Correlation Coefficient of the columns of data represented in column 1. 
+  
+  
+  # call numericDF() on our input data frame x to eliminate the non-numeric columns
+  tempDF <- numericDF(x)
+  
+  #create a new empty data frame.  
+  xdf <- data.frame()
+  
+  #create a counter variable that will help us keep track of our rows and columns
+  counter <- 1
+
+  # we will use a nested for loop to iterate through our tempDF and build up our new data frame xdf
+  # imagine a data frame containing 26 columns of data with column names a-z.  We want to iterate through our 26 colums and create the following row entries in column 1 of xdf: a-b,a-c,a-d,...,b-c,b-d,...,c-d,c-e,...,x-z,y-z. Note, we don't continue to z-a because z has all ready been paired with every other column. We will then let our i first = a and then create a second loop that will let j=b, then j=c, and so on until j=z.  Then our loop will move to i=b and will repeat this process of j=c, j=d, and so one until j=y.  We have to put a coupld of if statements in the loop to keep our indexing from going out of bounds.  I will comment on those as I go.
+
+  # seq_len builds a index range
+  # ncol(tempDF) counts the number of columns in tempDF
+  # for (i in seq_len(nocol(tempDF))) builds and index range from 1 to the number of columns in the database that we are working with
+  
+  for (i in seq_len(ncol(tempDF))){
+  # we add a test to make sure that i is never equal to z as mentioned above (z has all ready been matched with every other column).  Since the i value of z is the last column number which is equal to the number of columns, we just say that i must always be less than the numer of columns
+    if (i < ncol(tempDF)){
+  # now we create the nested loop for our j's.  we want to make sure that the j's are always greater than the i's.  This helps us avoid duplication.  We don't want a-a because this is useless and we don't want b-a becuase we have all ready done a-b.
+      for (j in seq_len(ncol(tempDF))){
+        if (j > i){
+  # the next line is functionality that we have used in a previous assigment.  we are slicing into the tempDF and building up the new dataframe xdf by using the paste function.  
+  # the paste function accepts two strings in this case and concacenates them using a space as a default separator.  We specify that we want - as the separator
+          xdf[counter,1]= paste(names(tempDF[i]),names(tempDF[(j)]),sep="-")
+  #we increase the value of our counter by one so our next entry appears on the subsequent row of the new data frame
+          counter <- counter + 1
+        }
+      }   
+    }
+  }
+
+  # Now we will fill the second column of our new data frame with the pearson correlation coefficeint corresponding to the variable pair in the first column.  For example, for the row in column 1 that has 'carat-depth', we will calculate the correlation coefficient on the entire row 1 and row 2.  We will return that integer value in row 1 column 2.
+
+  # this loop follows the same logic as the above loop.  The only difference is that instead of using slicing and the paste function to build of a column, we are using slicing and the cor() function.
+  # the cor() function accepts 2 vectors or columns of data in this case and calculates the Pearson Correlation Coefficient.
+  
+  counter <- 1
+  for (i in seq_len(ncol(tempDF))){
+    if (i < ncol(tempDF)){
+      for (j in seq_len(ncol(tempDF))){
+        if (j > i){
+          xdf[counter,2]= cor(tempDF[i],tempDF[j])
+          counter <- counter + 1
+        }
+      }   
+    }
+  }
+  # Add names to our two columns of data
+  names(xdf)<-c("Variables","Corr_Coeff")  
+  return(xdf)
+}
+
+#call the function coeff() on the data frame diamonds and assign the results to a new variable coeff_diamonds
+
+coeff_diamonds <- coeffDF(diamonds)
+
+# we show coeff_diamonds
+coeff_diamonds
+
+
+
+```
+
+####__Problem 3:__
+```{r}
+# We will build a function called scatterDF(x) that accepts an arbitrary  dataframe as input (we will use diamonds for purposes of example).  scatterDF() will use coeffDF() from problem 2 to (1) eliminate all non-numeric columns by calling the numericDF() function developed in part 1 and (2) will build a scatterplot for each pair of columns.  For example, if your data frame contains 4 columns w,x,y,z of numeric data, scatterDF() will create a scatterplot for each pair wx,wy,wz,xy,xz,yz.  The title of the scatterplot will state the variable pairing as well as state the Pearson Correlation Coefficient of the two columns of data.
+
+scatterDF <- function(x)
+{
+  # we call coeffDF() on the input to perform three steps: (1) to eliminate or "clean" the non-numeric columns from our input dataframe and (2) to builds a new data frame containing 2 columns- a column of the variable pairs from our cleaned dataframe and a column of the Pearson Correlation Coefficients relating to column data associated with the variable pairs. (3) build a scatterplot for each pair of columns.  For example, if your data frame contains 4 columns w,x,y,z of numeric data, scatterDF() will create a scatterplot for each pair wx,wy,wz,xy,xz,yz.  The title of the scatterplot will state the variable pairing as well as state the Pearson Correlation Coefficient of the two columns of data.
+  numericdf<-numericDF(x)
+  coeffdf<- coeffDF(x)
+  # initiate a counter variable to help us keep tracks of rows and columns
+  counter <- 1
+  # we are going to loop through our data frame and create several plots
+  # the structure of our nested loop is the same as above.  for references to what i and j are, see the comments in part 1.  What is new is the ggplot call in the inside loop.  I will explain that below.
+  for (i in seq_len(ncol(numericdf))){
+    if (i < ncol(numericdf)){
+      for (j in seq_len(ncol(numericdf))){
+        if (j > i){
+  # we create a scatter plot using ggplot and assign it to a variable h of class ggplot
+  # the first arguement of ggplot() is the name of the data frame that we are working with
+  # the second arguement of ggplot() is assigning an asethetic to our plots.  I have chosen to use the aes_string() function which allows me to pass text in for my column names.  I use i and j to reference the various columns.  This way we get a different column pairing on every iteration.
+  # we start to layer onto our ggplot by adding geom_point() which creates the points on our scatterplot
+  # we add the final layer by using ggtitle() to add the title that we want.  Since we are creating multiple charts, we use sprintf() to allow us to pass variables in as test strings.  This way our title can change with each iteration.  The %s represents where we will pass in a variable string value and the backslash n represents a new line.  For each %s pair, we are accessing the row entry and pearson coefficient that relates to each chart
+          h<-ggplot(numericdf, aes_string(colnames(numericdf)[i], colnames(numericdf)[j])) + geom_point() + ggtitle(sprintf('%s\nPearson Correlation Coefficient=%s', coeffdf[counter,1],coeffdf[counter,2]))
+          counter <- counter + 1
+          print(h)
+        }
+      }
+    }
+  }
+} 
+
+# call scatterDF() on the diamonds data frame and assing the results to a variable called scatter_diamonds
+
+scatter_diamonds <-scatterDF(diamonds)
+
+#show scatter_diamonds
+
+scatter_diamonds
+
+```
