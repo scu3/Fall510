@@ -1,0 +1,109 @@
+---
+title: "Test1_R"
+author: "Sean Underwood"
+date: "Thursday, October 8, 2015"
+output: html_document
+---
+```{r}
+# In order to complete the assignment, we load the necessary packages and data
+require(ggplot2,quietly=TRUE)
+require(stats)
+require(graphics)
+require(grid)
+data(diamonds)
+data(mtcars)
+
+```
+
+####__Problem 1:__
+```{r}
+# we need to take the vector mtcars$vs and convert it to a logical vector
+# we will create a vector called vs_logical and use the as.logical function to convert the 32 element long vector of 0's and 1's to a 32 element long vector of TRUE and FALSE.  the as.logical function accepts a value x (a zero or one in this case) and then attempts to coerce this arguement into a logical value.  If x=0, as.logical will return a FALSE.  If x is equal to anything other number, as.logical will return a TRUE.   Note, 0.4375 of the 32 elements are TRUE's
+
+vs_logical <- as.logical(mtcars$vs)
+
+# the next calculation just verifies the ratio of TRUE to FALSE.  Since TRUE's are 1's and FALSE's are 0's, we just sum up the 1's and divide by the length.
+sum(vs_logical)/length(vs_logical)
+# the diamonds data frame is 53940 observations long so we need to extend vs_logical to that length.  53940/32 = 1685 with a remainder of 20.  First we will repeat vs_logical 1685 times.  the rep() function will repeat the first arguement the number of times given by the second arguement.
+
+vs_logical <- rep(vs_logical,1685)
+# recalculating our ratio to make sure we are still at 0.4375
+sum(vs_logical)/length(vs_logical)
+# now we will tack on 20 elements of vs_logical to get us to 53940 elements.  In order to have the correct ratio, we want a slice or subset of vs_logical that has 9 TRUE's in it.  This will give us a total of 23599 TRUE Values which will make the ratio of TRUE to FALSE = 0.4375046.  This is as close as we can get to 0.4375.  The 20 element long subset vs_logical[5:24] has 9 TRUE's. 
+vs_logical <- c(vs_logical,vs_logical[5:24])
+# one last calculation to make sure our desired ratio stll holds
+sum(vs_logical)/length(vs_logical)
+
+# now we add our vs_logical column to dimonds
+
+diamonds$vs <- vs_logical
+
+# now we will use the str() function to show you that we were successful.  the str() function displays the structure of our data frame.  if we were successful we will be able to see our new VS vector as the last column of our dataframe
+str(diamonds)
+
+```
+
+
+####__Problem 2:__
+```{r}
+
+extract <- function(x)
+{   # extract(x) is a function that accepts a single arguement - an arbitrary dataframe x, and returns a new data frame whose columns only cosist of factors and logical data
+  
+  #Parameters- a single data frame
+  
+  
+
+    # we use the sapply function to loop through our input.  sapply is a function that accepts a data frame (in this case) and will repeatedly apply a function (discussed below) to each element as it iterates through the data frame.  In this case, we are going to apply the sapply function twice:
+
+    # our first application of the sapply function takes our user input data frame x as an arguement and applies the is.factor function to each column of x.  If the the column of x contains data of class factor, sapply will fill our new data frame factordf with those columns.
+
+    factordf <- x[sapply(x,is.factor)]
+    # our second application of the sapply function takes our user input data frame x as an arguement and applies the is.logical function to each column of x.  If the the column of x contains data of class logical, sapply will fill our new data frame logicaldf with those columns.   
+    
+    logicaldf <- x[sapply(x,is.logical)]
+    
+    # now we have two data frames (factordf and logicaldf) that we want to combine into a new data frame.  We will use the data.frame() function to create a new data frame called newdf.  data.frame(factordf,logicaldf) will combine the two data frames into one
+    newdf <- data.frame(factordf,logicaldf)
+    # we the return call to supply the output of our function back to the user
+    return(newdf)
+  }
+
+# Now we will use our new function to extract the numeric columns of the diamonds data set by calling extract() on the diamonds data frame and assigning the results to a new variable newdf
+
+newdf <- extract(diamonds)
+
+# since these data frames can be huge, we will use the head function to display the first 7 rows of data.  Additionally, we will display the strucutre of our new data frame using the str() function
+head(newdf)
+str(newdf)
+
+
+```
+####__Problem 3:__
+
+```{r}
+# the problem asks us to plot a gray bar for each one of the logical and factor columns of newdf.  To accomplish this we build a for loop.  We build up an index list for the loop to iterate through using the seq_len(ncol(dewdf)) call.  This creates a sequence that starts with 1, ends with the number of columns in our data frame (4 in this case) and increments by 1.
+for (i in seq_len(ncol(newdf)))
+  {
+  # we create a variable called grey_bar and build a plot using the ggplot() function.  ggplot() takes our data frame newdf as the first argument.  for the second arguement, we use the aes_string() function to tell ggplot that we are using column names to map the aesthetic.  we then tell ggplot that each column name will be used as our x axis as we iterate through newdf.  we instruct ggplot that we want to add a gray bar layer to our ggplot by adding geom_bar() chart.  the problem did not ask for it but we add a title to each chart letting the reader know that this info comes from the Diamonds Data Frame and which variables we are looking at.  The ggtitle() layer is added to our ggplot to accomplish this.  we use the sprintf() call to allow us to pass variables into the title string.  the %s represents the variable that will change with each iteration.  we assing the column names as the element that will fill that variable spot.
+  
+    grey_bar <- ggplot(newdf,aes_string(colnames(newdf)[i])) + geom_bar() + ggtitle(sprintf("Diamonds Data Frame\nFrequency of %s Values",(colnames(newdf)[i]))) 
+ # we print each graph as we iterate through the dataframe   
+    print(grey_bar)
+
+  }
+
+```
+
+
+
+####__Problem 4:__
+```{r}
+# we will take the newdf created in part 2 which contains the logical and factor columns of diamonds and create a list of frequency tables for each categorical and logical variable (factors are ordered categorical data).
+
+# we use the list function to create a list.  we use the table function to create the individual tables.  we then slice or subset into the newdf to access each column by using the columns index number.
+
+list( table(newdf[1]), table(newdf[2]), table(newdf[3]), table(newdf[4]))
+```
+
+
