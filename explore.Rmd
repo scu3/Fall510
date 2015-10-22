@@ -45,6 +45,8 @@ To accomplish this task we will build several functions:
   (9) pearsondf(df,corrthresh) - accepts an arbitrary data frame and a correlation threshold and returns a data frame of all numeric variable pairs whose correlation coefficient is greater than the given threshold.
   
 
+  
+
 
 ```{r}
 # In order to complete the assignment, we load the necessary packages and data
@@ -62,6 +64,8 @@ data(mtcars)
 numericdf <- function(x)
   {
     # accepts an arbitrary data frame and returns a new data frame containing only numeric information.
+  
+    # we use the which() function to test each column in our data frame for the condition of whether it is numeric.  The lapply() function allows us to iterate through each column.  This process allows us to create a new data frame that contains only numberic columns and assign it to a variable 
     var_num <- x[which(lapply(x, is.numeric) == TRUE)]
     return(var_num)
   }
@@ -69,6 +73,8 @@ numericdf <- function(x)
 factordf <- function(x)
   {
     # accepts an arbitrary data frame and returns a new data frame containing only factor information.
+  
+    # we use the which() function to test each column in our data frame for the condition of whether it is of class factor.  The lapply() function allows us to iterate through each column.  This process allows us to create a new data frame that contains only factor columns and assign it to a variable
     var_factor <- x[which(lapply(x, is.factor) == TRUE)]
     return(var_factor)  
   }
@@ -76,6 +82,8 @@ factordf <- function(x)
 logicaldf <- function(x)
   {
     # accepts an arbitrary data frame and returns a new data frame containing only logical information.
+  
+    # we use the which() function to test each column in our data frame for the condition of whether it is logical.  The lapply() function allows us to iterate through each column.  This process allows us to create a new data frame that contains only logical columns and assign it to a variable
     var_logical <- x[which(lapply(x, is.logical) == TRUE)]
     return(var_logical)  
   }
@@ -126,12 +134,14 @@ bluehistograms <- function(df,binvect)
   
     newdf<-numericdf(df)
   
-# We build up an index list for the loop to iterate through using the seq_len(ncol(newdf)) call.  This creates a sequence that starts with 1, ends with the number of columns in our data frame.
+  # We build up an index list for the loop to iterate through using the seq_len(ncol(newdf)) call.  This creates a sequence that starts with 1, ends with the number of columns in our data frame.  The goal is to iterate through each column and build a pair of histograms.
   for (i in seq_len(ncol(newdf)))
     {
-      for (j in seq_len(length(binvect)))
+  # we used a nested for loop where the j will represent each bin size possibility.  this loop iterates through our binvect vector of bin sizes    
+    for (j in seq_len(length(binvect)))
         {
-        # to make the code more readable, we will build up each layer in a new line of code  
+        # to make the code more readable, we will build up each layer in a new line of code.  we could have performed this function in one call but this allows us to better document each step.
+        
         # create the ggplot and assign it to a variable. the ggplot() function accepts the name of our new numeric data frame and then we specify that we are passing in column names of class string.  
           bluehist <- ggplot(newdf,aes_string(colnames(newdf)[i]))
     
@@ -177,7 +187,7 @@ bluehistograms <- function(df,binvect)
 
 ```
 
-```
+
 ####__Problem 2:__
 #####Problem 2 asks us to plot a gray bar graph for every categorical and binary variable.
 
@@ -185,11 +195,7 @@ bluehistograms <- function(df,binvect)
 extract <- function(x)
 {   # extract(x) is a function that accepts a single arguement - an arbitrary dataframe x, and returns a new data frame whose columns only cosist of factors and logical data
   
-  #Parameters- a single data frame
-  
-  
-
-    # we use the sapply function to loop through our input.  sapply is a function that accepts a data frame (in this case) and will repeatedly apply a function (discussed below) to each element as it iterates through the data frame.  In this case, we are going to apply the sapply function twice:
+   # we use the sapply function to loop through our input.  sapply is a function that accepts a data frame (in this case) and will repeatedly apply a function (discussed below) to each element as it iterates through the data frame.  In this case, we are going to apply the sapply function twice:
 
     # our first application of the sapply function takes our user input data frame x as an arguement and applies the is.factor function to each column of x.  If the the column of x contains data of class factor, sapply will fill our new data frame factordf with those columns.
 
@@ -235,21 +241,26 @@ rsquaredf <- function(df)
     # we set two variables to NULL to make sure that our starting point is NULL
     rsq_names <- NULL
     r_square <- NULL
-    # create a correlation coefficient table so we can work with the row and column names
+    # create a correlation coefficient table so we can work with the row and column names.  we choose the pearson method (as opposed to kendall or spearman)
 
     corrdf <- cor(df, method="pearson")
     
-    # we build a length variable that is equal to the length of the # of columns in our data frame
+    # we build a length variable that is equal to the length of the # of columns in our data frame.  df[1,] indicates the first row and all of the columns of the data frame df
 
     len <- length(df[1,])
   # this is what he did to avoid duplicates 
-  # Only loop through the upper right triangle
+  # Only loop through the upper right triangle.  Our outer loop will go from the first column to the second from last.  To illustrate the purpose of this condition, assume that you have columns 26 columns labeled a through z.  Our goal is to build all pairs of column names without duplication.  For example, ab, ac,...,az,bc,bd,...,wz,yz.  Notes that by the time that we have gotten to column z, z has all ready been paired with all of the letters.
     for (i in (1:(len-1))) {
+      
+  # our inner loop goes from the second column to the last column.  this helps avoid mathcing columns with the same column like aa or bb.
+      
       for (j in ((i+1):len)) {
-# Form the name pair and add to the named pair vector
+# Form the name pair and add to the named pair vector.  We use the paste function to concantenate the two names
         pair_name <- paste(names(corrdf[,1])[[i]],names(corrdf[1,])[[j]],sep="-")
+ 
+# fill the vector rsq_names with the variable pairs created in the last step        
         rsq_names <- c(rsq_names, pair_name)
-# Add the r_square value to the value vector
+# Add the r_square value to the vector that we just put the variable pair names into.  We calc rsquare by squaring the pearson coeff
         r_square <- c(r_square, corrdf[i,j]^2)
       }
     }
@@ -288,14 +299,16 @@ pearsondf <- function(df,corrthresh)
 
     # we build a length variable that is equal to the length of the # of columns in our data frame   
     len <- length(df[1,])
-    # this is what he did to avoid duplicates 
-    # Only loop through the upper right triangle
+  # this is what he did to avoid duplicates 
+  # Only loop through the upper right triangle.  Our outer loop will go from the first column to the second from last.  To illustrate the purpose of this condition, assume that you have columns 26 columns labeled a through z.  Our goal is to build all pairs of column names without duplication.  For example, ab, ac,...,az,bc,bd,...,wz,yz.  Notes that by the time that we have gotten to column z, z has all ready been paired with all of the letters.
     for (i in (1:(len-1))) {
       for (j in ((i+1):len)) {
-    # Form the name pair and add to the named pair vector
+    # our inner loop goes from the second column to the last column.  this helps avoid mathcing columns with the same column like aa or bb.
         if (abs(corrdf[i,j]) > corrthresh){ 
-        
+    # Form the name pair and add to the named pair vector.  We use the paste function to concantenate the two names       
           pair_name <- paste(names(corrdf[,1])[[i]],names(corrdf[1,])[[j]],sep="-")
+
+    # fill the vector rsq_names with the variable pairs created in the last step            
           pearson_names <- c(pearson_names, pair_name)
     # Add the Pearson value to the value vector
           pearson <- c(pearson, corrdf[i,j])
@@ -324,11 +337,11 @@ explorelist<-function(df,corrthresh)
   #(3) a data frame containing each pair of variable names and the associated r-square coefficient for each numerical variable
   #(4) a data frame that contains each variable pair names and correlation coefficienct for all coefficients whose absolute value is greater than the correlation threshold for each numerical variable.
  
-  #1 we build a frequency table for every categorical and binary/logical value and assign it to a variable
+  #1 we build a frequency table for every categorical and binary/logical value and assign it to a variable.  we use the sapply function to repeatedly apply the table function to each variable of the data frame df.  we call extract() on df in the arguement to ensure we are only dealing with categorical and binary data
   
   freqtab_catlog <- sapply(extract(df),table)
   
-  #2 we build a summary statistics table for each numerical variable and assign it to a variable
+  #2 we build a summary statistics table for each numerical variable and assign it to a variable.  we use the sapply() function to repeatedly apply the summary function on the df data frame.  we call numericdf() in the arguement to ensure that our data frame only contains numerical data
   
   summstat_num <- sapply(numericdf(df),summary)
 
@@ -362,15 +375,15 @@ explore <- function(df,binvect,corrthresh)
 #      (c) a data frame for each pair of variable names and the associated r-square for every numerical variable.
 #      (d) a data frame for each pair of variable names above a given Pearson Correlation Coefficient for each numerical variable.
 
-  # call bluehistograms() to construct our histograms
+  # call bluehistograms() to construct our histograms, this produces the first output described above
   
   bluehistograms(df,binvect)
   
-  # call graybar() to construct our gray bars
+  # call graybar() to construct our gray bars, this produces the second output described above
   
   graybar(df)
   
-  # call explorelist() to return our list of freq tables, summary stats, and rsquare and pearson data frames
+  # call explorelist() to return our list of freq tables, summary stats, and rsquare and pearson data frames.  this creates the third output described above
   
   explorelist(df,corrthresh)
   
