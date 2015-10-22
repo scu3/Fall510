@@ -1,0 +1,395 @@
+---
+title: "Homework 6 - R"
+author: "Sean Underwood"
+date: "Saturday, October 17, 2015"
+output: html_document
+---
+We create a function explore(df,binvect,corrthresh) that accepts three arguements:
+
+  (1) df- an arbitrary data frame
+  
+  (2) binvect- a vector containing the number of bins desired in our histograms
+  
+  (3) corrthresh - a numerical value to serve as a threshold for our Pearson Correlation Coefficient.
+  
+explore() will produce the following information:
+
+  (1) A pair of blue histograms with a red line at the mean.  Each variable will have two histograms produced (one using counts and one using density) for each given bin count.
+
+  (2)  A gray bar plot for every categorical and binary variable.
+  
+  (3)  A list containing the following information:
+      (a) a frequency table for every categorical variable
+      (b) a summary statistics table for every numerical variable
+      (c) a data frame for each pair of variable names and the associated r-square for every numerical variable.
+      (d) a data frame for each pair of variable names above a given Pearson Correlation Coefficient for each numerical variable.
+      
+To accomplish this task we will build several functions:
+
+  (1) numericdf(x) - accepts an arbitrary data frame and returns a new data frame containing only numeric information.
+  
+  (2) factordf(x) - accepts an arbitrary data frame and returns a new data frame containing only factor information.
+  
+  (3) logicaldf(x) - accepts an arbitrary data frame and returns a new data frame containing only logical information. 
+  
+  (4) specialdiamonds() - this is a highly specialized function that takes the diamonds data frame and adds a logical column to it that has the same proportion of TRUE's as the mtcars$vs column. 
+  
+  (5) bluehistograms(df,binvect) - accepts an arbitrary data frame and a vector of bin sizes and produces the blue histograms described above (two (one based on counts and one based on density) for each numeric variable for every bin size with a red line at the mean).
+  
+  (6) extract(df) - accepts an arbitrary data frame and returns a new data frame that has only logical and factor information.
+  
+  (7) grabar(df) - accepts an arbitrary data frame and produces the gray bar plots described above for every categorical and logical variable.
+  
+  (8) rsquaredf(df) - accepts an arbitrary data frame and returns a data frame of all the numeric variable pairs and their associated r-square values.
+  
+  (9) pearsondf(df,corrthresh) - accepts an arbitrary data frame and a correlation threshold and returns a data frame of all numeric variable pairs whose correlation coefficient is greater than the given threshold.
+  
+
+
+```{r}
+# In order to complete the assignment, we load the necessary packages and data
+require(ggplot2)
+require(stats)
+require(graphics)
+require(grid)
+require(triangle)
+require(scales)
+data(diamonds)
+data(mtcars)
+
+# we now build functions 1-4 described above
+
+numericdf <- function(x)
+  {
+    # accepts an arbitrary data frame and returns a new data frame containing only numeric information.
+    var_num <- x[which(lapply(x, is.numeric) == TRUE)]
+    return(var_num)
+  }
+
+factordf <- function(x)
+  {
+    # accepts an arbitrary data frame and returns a new data frame containing only factor information.
+    var_factor <- x[which(lapply(x, is.factor) == TRUE)]
+    return(var_factor)  
+  }
+
+logicaldf <- function(x)
+  {
+    # accepts an arbitrary data frame and returns a new data frame containing only logical information.
+    var_logical <- x[which(lapply(x, is.logical) == TRUE)]
+    return(var_logical)  
+  }
+
+specialdiamonds<-function()
+  {
+  
+# this is a highly specialized function that takes the diamonds data frame and adds a logical column to it that has the same proportion of TRUE's as the mtcars$vs column. 
+ 
+# we need to take the vector mtcars$vs and convert it to a logical vector
+# we will create a vector called vs_logical and use the as.logical function to convert the 32 element long vector of 0's and 1's to a 32 element long vector of TRUE and FALSE.  the as.logical function accepts a value x (a zero or one in this case) and then attempts to coerce this arguement into a logical value.  If x=0, as.logical will return a FALSE.  If x is equal to anything other number, as.logical will return a TRUE.   Note, 0.4375 of the 32 elements are TRUE's
+
+  vs_logical <- as.logical(mtcars$vs)
+
+# the next calculation just verifies the ratio of TRUE to FALSE.  Since TRUE's are 1's and FALSE's are 0's, we just sum up the 1's and divide by the length.
+  sum(vs_logical)/length(vs_logical)
+# the diamonds data frame is 53940 observations long so we need to extend vs_logical to that length.  53940/32 = 1685 with a remainder of 20.  First we will repeat vs_logical 1685 times.  the rep() function will repeat the first arguement the number of times given by the second arguement.
+
+  vs_logical <- rep(vs_logical,1685)
+# recalculating our ratio to make sure we are still at 0.4375
+  sum(vs_logical)/length(vs_logical)
+# now we will tack on 20 elements of vs_logical to get us to 53940 elements.  In order to have the correct ratio, we want a slice or subset of vs_logical that has 9 TRUE's in it.  This will give us a total of 23599 TRUE Values which will make the ratio of TRUE to FALSE = 0.4375046.  This is as close as we can get to 0.4375.  The 20 element long subset vs_logical[5:24] has 9 TRUE's. 
+  vs_logical <- c(vs_logical,vs_logical[5:24])
+# one last calculation to make sure our desired ratio stll holds
+  sum(vs_logical)/length(vs_logical)
+
+# now we add our vs_logical column to dimonds
+
+  diamonds$vs <- vs_logical
+
+# now we will use the str() function to show you that we were successful.  the str() function displays the structure of our data frame.  if we were successful we will be able to see our new VS vector as the last column of our dataframe
+
+
+  return(diamonds)
+}
+```
+
+####__Problem 1:__
+#####Problem 1 asks us to plot a pair of blue histograms with a vertical red line at the mean (One histogram will use counts and the other will use density) for every numerical variable at each bin size specified in the bin size parameter.    
+
+```{r}
+bluehistograms <- function(df,binvect)
+  {
+  
+# accepts an arbitrary data frame and a vector of bin sizes and produces the blue histograms (two (one based on counts and one based on density) for each numeric variable for every bin size with a red line at the mean).
+
+# create a new data frame containing only numeric info.  Call our previously constructed function.
+  
+    newdf<-numericdf(df)
+  
+# We build up an index list for the loop to iterate through using the seq_len(ncol(newdf)) call.  This creates a sequence that starts with 1, ends with the number of columns in our data frame.
+  for (i in seq_len(ncol(newdf)))
+    {
+      for (j in seq_len(length(binvect)))
+        {
+        # to make the code more readable, we will build up each layer in a new line of code  
+        # create the ggplot and assign it to a variable. the ggplot() function accepts the name of our new numeric data frame and then we specify that we are passing in column names of class string.  
+          bluehist <- ggplot(newdf,aes_string(colnames(newdf)[i]))
+    
+        # add the histogram layer
+        # we will calc the binwidth based on the value given in the binvect variable
+
+          bincalc<-(max(newdf[,i])-min(newdf[,i]))/binvect[j]
+
+        # we specify how many bins and the color of the outline and fill
+        
+          bluehist <- bluehist + geom_histogram(binwidth = bincalc, colour = 'blue', fill = 'blue')
+
+        # add the mean line using the geom_vline() function. we calculate the mean, designate the color to be red and size to be 1
+                
+          bluehist <- bluehist + geom_vline(xintercept=mean(newdf[[i]]), colour = "red", linetype = "solid", size = 1)
+
+        # add the title. we use the ggtitle() function and sprintf() function so we can pass in string operators that allow the title to change with each iteration.  Our title will include the variable name, number of bins, mean, min, and max. 
+
+          bluehist <- bluehist + ggtitle(sprintf("Count of %s Values\nWith Bincount=%s and Mean=%s\nMin=%s and Max=%s",colnames(newdf)[i],binvect[j],round(mean(newdf[[i]]),3),min(newdf[,i]),max(newdf[,i]))) 
+        # we print each graph as we iterate through the dataframe   
+          print(bluehist)
+
+        # the following code builds the histograms using density instead of count.  The code is identical except in the stage where we add the histogram we indicate our desire for a density plot
+        
+        #create the ggplot for the density histogram  
+          bluedens <- ggplot(newdf,aes_string(colnames(newdf)[i]))
+    
+        # add the density histogram layer
+          bluedens <- bluedens + geom_histogram(aes(y=..density..),binwidth = bincalc, colour = 'blue', fill = 'blue')
+
+        # add the mean line
+
+          bluedens <- bluedens + geom_vline(xintercept=mean(newdf[[i]]), colour = "red", linetype = "solid", size = 1)
+
+        # add the title 
+
+          bluedens <- bluedens + ggtitle(sprintf("Density of %s Values\nWith Bincount=%s and Mean=%s\nMin=%s and Max=%s",colnames(newdf)[i],binvect[j],round(mean(newdf[[i]]),3),min(newdf[,i]),max(newdf[,i])))
+        # we print each graph as we iterate through the dataframe   
+          print(bluedens)
+        }    
+    }
+}
+
+```
+
+```
+####__Problem 2:__
+#####Problem 2 asks us to plot a gray bar graph for every categorical and binary variable.
+
+```{r}
+extract <- function(x)
+{   # extract(x) is a function that accepts a single arguement - an arbitrary dataframe x, and returns a new data frame whose columns only cosist of factors and logical data
+  
+  #Parameters- a single data frame
+  
+  
+
+    # we use the sapply function to loop through our input.  sapply is a function that accepts a data frame (in this case) and will repeatedly apply a function (discussed below) to each element as it iterates through the data frame.  In this case, we are going to apply the sapply function twice:
+
+    # our first application of the sapply function takes our user input data frame x as an arguement and applies the is.factor function to each column of x.  If the the column of x contains data of class factor, sapply will fill our new data frame factordf with those columns.
+
+    factordf <- x[sapply(x,is.factor)]
+    # our second application of the sapply function takes our user input data frame x as an arguement and applies the is.logical function to each column of x.  If the the column of x contains data of class logical, sapply will fill our new data frame logicaldf with those columns.   
+    
+    logicaldf <- x[sapply(x,is.logical)]
+    
+    # now we have two data frames (factordf and logicaldf) that we want to combine into a new data frame.  We will use the data.frame() function to create a new data frame called newdf.  data.frame(factordf,logicaldf) will combine the two data frames into one
+    newdf <- data.frame(factordf,logicaldf)
+    # we the return call to supply the output of our function back to the user
+    return(newdf)
+  }
+
+graybar<-function(df)
+  {
+    df<-extract(df)
+# the problem asks us to plot a gray bar for each one of the logical and factor columns of newdf.  To accomplish this we build a for loop.  We build up an index list for the loop to iterate through using the seq_len(ncol(dewdf)) call.  This creates a sequence that starts with 1, ends with the number of columns in our data frame and increments by 1.
+    for (i in seq_len(ncol(df)))
+      {
+# we create a variable called gray_bar and build a plot using the ggplot() function.  ggplot() takes our data frame newdf as the first argument.  for the second arguement, we use the aes_string() function to tell ggplot that we are using column names to map the aesthetic.  we then tell ggplot that each column name will be used as our x axis as we iterate through newdf.  we instruct ggplot that we want to add a gray bar layer to our ggplot by adding geom_bar() chart.  the problem did not ask for it but we add a title to each chart letting the reader know that this info comes from the Diamonds Data Frame and which variables we are looking at.  The ggtitle() layer is added to our ggplot to accomplish this.  we use the sprintf() call to allow us to pass variables into the title string.  the %s represents the variable that will change with each iteration.  we assing the column names as the element that will fill that variable spot.
+  
+        gray_bar <- ggplot(df,aes_string(colnames(df)[i])) + geom_bar() + ggtitle(sprintf("Diamonds Data Frame\nFrequency of %s Values",(colnames(df)[i]))) 
+# we print each graph as we iterate through the dataframe   
+        print(gray_bar)
+
+  }
+}
+
+```
+####__Problem 3:__
+#####Problem 3 asks us to calculate the r-square value for every pair of numerical variables.
+
+```{r}
+rsquaredf <- function(df)
+  { 
+    # accepts an arbitrary data frame and returns a data frame of all the numeric variable pairs and their associated r-square values.
+  
+    # we call the numericdf() function to make sure that our data frame contains only numeric information
+    
+    df <- numericdf(df)
+    
+    # we set two variables to NULL to make sure that our starting point is NULL
+    rsq_names <- NULL
+    r_square <- NULL
+    # create a correlation coefficient table so we can work with the row and column names
+
+    corrdf <- cor(df, method="pearson")
+    
+    # we build a length variable that is equal to the length of the # of columns in our data frame
+
+    len <- length(df[1,])
+  # this is what he did to avoid duplicates 
+  # Only loop through the upper right triangle
+    for (i in (1:(len-1))) {
+      for (j in ((i+1):len)) {
+# Form the name pair and add to the named pair vector
+        pair_name <- paste(names(corrdf[,1])[[i]],names(corrdf[1,])[[j]],sep="-")
+        rsq_names <- c(rsq_names, pair_name)
+# Add the r_square value to the value vector
+        r_square <- c(r_square, corrdf[i,j]^2)
+      }
+    }
+
+  # create our rsq_df data frame by binding the vectors that we created containing names and the rsquare values.
+  rsq_df <- data.frame(cbind(rsq_names, r_square))
+
+  # rename our column headers to be more informative
+  names(rsq_df)[1] <- "Pair"
+  names(rsq_df)[2] <- "R-Square Value"
+
+  return(rsq_df)
+
+
+}
+```
+####__Problem 4:__
+##### We will build a function that accepts two parameters: a dataframe and a number representing a correlation threshold.  The function will return a list containing: (1) a frequency table for every categorical and binary value,(2) a summary statistics table for each numerical variable (3) a data frame containing each pair of variable names and the associated r-square coefficient for each numerical variable, (4) a data frame that contains each variable pair names and correlation coefficienct for all coefficients whose absolute value is greater than the correlation threshold for each numerical variable. We will create some other functions to help complete the explorelist() function.
+
+
+
+```{r}
+pearsondf <- function(df,corrthresh)
+  { df <- numericdf(df)
+
+    # accepts an arbitrary data frame and a correlation threshold and returns a data frame of all numeric variable pairs whose correlation coefficient is greater than the given threshold.
+    
+    # set two variables to NULL to make sure that we are starting our loop with NULL values
+    
+    pearson_names <- NULL
+    pearson <- NULL
+
+    # create a correlation coefficient table so we can work with the row and column names
+
+    corrdf <- cor(df, method="pearson")
+
+    # we build a length variable that is equal to the length of the # of columns in our data frame   
+    len <- length(df[1,])
+    # this is what he did to avoid duplicates 
+    # Only loop through the upper right triangle
+    for (i in (1:(len-1))) {
+      for (j in ((i+1):len)) {
+    # Form the name pair and add to the named pair vector
+        if (abs(corrdf[i,j]) > corrthresh){ 
+        
+          pair_name <- paste(names(corrdf[,1])[[i]],names(corrdf[1,])[[j]],sep="-")
+          pearson_names <- c(pearson_names, pair_name)
+    # Add the Pearson value to the value vector
+          pearson <- c(pearson, corrdf[i,j])
+        }
+      }
+    }
+  # create our pearson_df data frame by binding the vectors that we created containing names and the Corr coef values.   
+    
+  pearson_df <- data.frame(cbind(pearson_names, pearson))
+  # rename the column heading with informative names
+  names(pearson_df)[1] <- "Pair"
+  names(pearson_df)[2] <- "Pearson Coefficient Value"
+
+  return(pearson_df)
+
+
+}
+
+
+explorelist<-function(df,corrthresh)
+{
+  #explorelist() is a function that accepts two parameters: a dataframe and a number representing a correlation threshold.  The function will return a list containing:
+  
+  #(1) a frequency table for every categorical and binary value
+  #(2) a summary statistics table for each numerical variable
+  #(3) a data frame containing each pair of variable names and the associated r-square coefficient for each numerical variable
+  #(4) a data frame that contains each variable pair names and correlation coefficienct for all coefficients whose absolute value is greater than the correlation threshold for each numerical variable.
+ 
+  #1 we build a frequency table for every categorical and binary/logical value and assign it to a variable
+  
+  freqtab_catlog <- sapply(extract(df),table)
+  
+  #2 we build a summary statistics table for each numerical variable and assign it to a variable
+  
+  summstat_num <- sapply(numericdf(df),summary)
+
+  # use the list function to build our list with the pieces we just created
+  
+  final_list <- list(freqtab_catlog,summstat_num,rsquaredf(df),pearsondf(df,corrthresh))
+  
+  return(final_list)
+  
+}
+
+explore <- function(df,binvect,corrthresh)
+  {
+# explore(df,binvect,corrthresh) that accepts three arguements:
+
+#  (1) df- an arbitrary data frame
+  
+#  (2) binvect- a vector containing the number of bins desired in our histograms
+  
+#  (3) corrthresh - a numerical value to serve as a threshold for our Pearson Correlation Coefficient.
+  
+#explore() will produce the following information:
+
+#  (1) A pair of blue histograms with a red line at the mean.  Each variable will have two histograms produced (one using counts and one using density) for each given bin count.
+
+#  (2)  A gray bar plot for every categorical and binary variable.
+  
+#  (3)  A list containing the following information:
+#      (a) a frequency table for every categorical variable
+#      (b) a summary statistics table for every numerical variable
+#      (c) a data frame for each pair of variable names and the associated r-square for every numerical variable.
+#      (d) a data frame for each pair of variable names above a given Pearson Correlation Coefficient for each numerical variable.
+
+  # call bluehistograms() to construct our histograms
+  
+  bluehistograms(df,binvect)
+  
+  # call graybar() to construct our gray bars
+  
+  graybar(df)
+  
+  # call explorelist() to return our list of freq tables, summary stats, and rsquare and pearson data frames
+  
+  explorelist(df,corrthresh)
+  
+  }
+```
+####__Problem 5:__
+##### Test our explore() function using our altered diamonds data frame that includes the logical column and mtcars using bins = 5,20,50 and a pearson threshold of 0.25
+
+```{r}
+# add the logical column to diamonds
+
+diamonds<-specialdiamonds()
+
+# call our function on diamonds
+explore(diamonds,c(5,20,50),0.25)
+
+# call our function on explore
+explore(mtcars,c(5,20,50),0.25)
+```
+
+
+
