@@ -19,7 +19,7 @@ list_hist_grid()- This function carries out the task set forth in question 2.   
 
 sample1000() - This function is for problem 3.  sample1000() accepts a dataframe column in the format dfname$colname.  We then sample the dfcolumn 1000 times.  During each iteration, we perform samples of 5 different sizes (1%,10%,25%,50%,80%).  We take the mean of each sample and that mean becomes a row entry in a new dataframe.  Our new dataframe will have 5 columns (each for a different sample size) and 1000 rows (each for the mean of a different sample).
 
-df_hist_grid() - This function is for problem 4.  It accepts the df created by sample1000() and the dfcolumn from the original used as input for the sample1000() function.  The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  list_hist_grid() will create a grid of histograms.
+df_hist_grid() - This function is for problem 4.  It accepts the df created by sample1000() and the dfcolumn from the original used as input for the sample1000() function.  The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  
 
 sample1000Statistics()- This function is for problem 5.  sample1000Statistics() accepts three parameters: the sample1000df is the dataframe returned by the sample1000() function; dfcolumn is the original data that sample1000() performed all of its operations on; and sampleStatisticsdf is the dataframe created by sampleStatistics(). sample1000Statistics() calculates the min,max,mean, and variance of each column of sample1000df and dfcolumn and appends the results to sampleStatisticsdf.  
 
@@ -37,7 +37,15 @@ To complete tis assingment I created four global variables.
 
 (3) problem8 - calls the test() function on the diamonds$carat dataframe and stores the information
 
-(4) problem9 - calls the test() function on the faithful$eruptions dataframe and stores the information
+(4) problem9 - calls the test() function on the faithful$eruptions dataframe and stores the information (this was acutally the second part of question 8)
+
+Question (9) - The test asks us to provide a brief explanation of what we observed in the measures and histograms as it relates to the sample size and resampling.
+
+For the first grid of histograms, where we were taking single samples of 1%,10%,25%, and 80%, we saw that the distriubtions of each sample became closer and closer to the actual distribution (shown by the 100% sample) as the sample size increased.
+
+For the second second grid of histomgrams, where we were plotting the means of 1000 samples, we saw that as the sample size increased, the distributions of the means became increasing normal (as in the normal distribution).
+
+Finally, on the histograms created in problems 6 and 7, we see that the means of the samples are kind of close to the actual mean but the Resample means are approxmimately equal to the actual mean.
 
 ```{r}
 # In order to complete the assignment, we load the necessary packages and data
