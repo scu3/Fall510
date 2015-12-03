@@ -1,0 +1,466 @@
+---
+title: "TEST2_R"
+author: "Sean Underwood"
+date: "Thursday, November 19, 2015"
+output: html_document
+---
+
+To complete this assignment I created several functions and a few global variables.  I describe all of the functions below.  The three global variables are: abalone - a dataframe that is used as a parameter throughout the assignment; problems1_7 - calls the test() fucn
+
+abalonedf() - We needed the abalone data set for this assingment.  This function loads the data, creates a dataframe, and names the columns.
+
+randomsample() - We have to take lots of random samples in this assingnment.  This function creates a random sample of size n with or without replacement.
+
+samples() - Takes a column of a dataframe and uses randomsample() to return a list.  I specifically wanted a function that returned a list because I wanted one object that contained all of my initial sample data.  A list allows me to have columns of different legnth which is what I wanted because a 1% sample is a different size than a 10% sample.  This function completes the first half of question 1.
+
+sampleStatistics()- This function completes question 1.  It accepts a list created by the function samples().  The parameter is assumed to be a list whose first column contains a random sample of 1% of the df column.  Column 2 will contain a 10% sample, column 3 will contain a 25% sample, column 4 will contain a 50% sample, column 5 will contain a 80% sample and column 6 will contain a 100% sample which is the original column.  sampleStatistics() returns a dataframe that has 4 rows and 6 columns.  Each column represents a samples size (1%,10%,25%,50%,80%,100%), and each row is a statistics (min,max,mean,variance).
+
+list_hist_grid()- This function carries out the task set forth in question 2.    It accepts the LIST created by samples()as a parameter.   
+
+sample1000() - This function is for problem 3.  sample1000() accepts a dataframe column in the format dfname$colname.  We then sample the dfcolumn 1000 times.  During each iteration, we perform samples of 5 different sizes (1%,10%,25%,50%,80%).  We take the mean of each sample and that mean becomes a row entry in a new dataframe.  Our new dataframe will have 5 columns (each for a different sample size) and 1000 rows (each for the mean of a different sample).
+
+df_hist_grid() - This function is for problem 4.  It accepts the df created by sample1000() and the dfcolumn from the original used as input for the sample1000() function.  The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  list_hist_grid() will create a grid of histograms.
+
+sample1000Statistics()- This function is for problem 5.  sample1000Statistics() accepts three parameters: the sample1000df is the dataframe returned by the sample1000() function; dfcolumn is the original data that sample1000() performed all of its operations on; and sampleStatisticsdf is the dataframe created by sampleStatistics(). sample1000Statistics() calculates the min,max,mean, and variance of each column of sample1000df and dfcolumn and appends the results to sampleStatisticsdf.  
+
+hist_six()- This function is for problem 6. It accepts three parameters:  sample1000Statisticsdf is the dataframe returned by sample1000Statistics(); dfcolumn is the original dataframe column; TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  hist_six() will create a histogram of 100% of the data and will overlay label lines that represent SampleMeans for each sample size.
+
+hist_seven()- is the histogram asked for in problem seven.  It accepts three parameters:sample1000Statisticsdf is the dataframe returned by sample1000Statistics(); dfcolumn is the original dataframe column; TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms. hist_seven() will create a histogram of 100% of the data and will overlay label lines that represent ResampleMeans for each sample size.
+
+test()-  accepts two parameters: dfcolumn - a column from a dataframe; and title- defaults to black and gives the user the option of having a subtitle.  test() calls all of the previously created fucntions to solve the problems given on the test.  The variables below are created to store each question.
+
+To complete tis assingment I created four global variables.
+
+(1)  abalone - a dataframe that is used as a parameter throughout the assignment
+
+(2) problems1_7 - calls the test() fucntion on the abalone$Whole_wgt dataframe and stores the information
+
+(3) problem8 - calls the test() function on the diamonds$carat dataframe and stores the information
+
+(4) problem9 - calls the test() function on the faithful$eruptions dataframe and stores the information
+
+```{r}
+# In order to complete the assignment, we load the necessary packages and data
+require(ggplot2)
+require(stats)
+require(graphics)
+require(grid)
+require(triangle)
+require(scales)
+require(gridExtra)
+
+abalonedf <- function()
+  {
+    # abalonedf is a function that creates the abalone dataframe 
+  
+
+    # load abalone data set using a http address
+    uciaddress <- "http://archive.ics.uci.edu/ml/machine-learning-databases/"
+
+    # create a variable called dataset and assign the abalone data to it
+    dataset <- "abalone/abalone.data"
+
+    getdataset <- paste(uciaddress, dataset, sep="")
+
+    # read the contents of the abalone dataset and assign the data to a variable-abalone
+    abalone <- read.csv(getdataset)
+
+    # add column names to our new data frame abalone
+    colnames(abalone) <- c("Gender","Length","Diameter",
+                         "Height", "Whole_wgt",
+                         "Shucked_wgt", "Viscera wgt",
+                         "Shell wgt", "Rings")
+    return(abalone)
+  }
+
+abalone<-abalonedf()
+
+
+randomsample <- function(dataframe,n,replacement)
+  { # randomsample() is a function creates a random sample using three parameters:
+      # dataframe
+      # n = the size of the sample
+      # TRUE/FALSE - True for sampling with replacement and False for sampling without rep
+    
+    # the dataframe function creates a dataframe.  the sample function creates a random sample  
+  
+  return (dataframe[sample(nrow(dataframe), n, replace=replacement),]) }
+
+```
+
+
+```{r}
+samples <- function (dfcolumn)
+  {
+    # samples() takes a column of a data frame as a parameter in the form dfname$colname and returns a list of random samples.  The first column of the list will contain a random sample of 1% of the df column.  Column 2 will contain a 10% sample, column 3 will contain a 25% sample, column 4 will contain a 50% sample, column 5 will contain a 80% sample and column 6 will contain a 100% sample which is the original column.
+  
+    # we ensure that our input is a dataframe with a single column
+  df <- data.frame(dfcolumn)
+
+    # create 5 random samples using the random sample function created above.  We use the round function to round up the multiplication operation we perform on the number of rows to get a sample of the desired size.  Each random sample is a numeric vector assined to a variable  
+  one <- randomsample(df, round((nrow(df))*.01),FALSE)
+  ten <- randomsample(df, round((nrow(df))*.1),FALSE)
+  twentyfive <- randomsample(df, round((nrow(df))*.25),FALSE)
+  fifty <- randomsample(df, round((nrow(df))*.5),FALSE)
+  eighty <- randomsample(df, round((nrow(df))*.8),FALSE)
+
+  # I chose to return a list containing each of the random samples because a list can contain vectors of different lengths.  This will allow us to extract each vector and convert it to a data frame later when we need the data.
+  return(list(one,ten,twentyfive,fifty,eighty,dfcolumn))
+
+  }
+
+sampleStatistics <- function (listname)
+  {
+  # sampleStatistics() accepts a list created by the function samples().  The parameter is assumed to be a list whose first column contains a random sample of 1% of the df column.  Column 2 will contain a 10% sample, column 3 will contain a 25% sample, column 4 will contain a 50% sample, column 5 will contain a 80% sample and column 6 will contain a 100% sample which is the original column.  sampleStatistics() returns a dataframe that has 4 rows and 6 columns.  Each column represents a samples size (1%,10%,25%,50%,80%,100%), and each row is a statistics (min,max,mean,variance).
+  
+  
+  # create a new vector 4 elements long for each of our random sample vectors  
+  onestats <- c(min(listname[[1]]),max(listname[[1]]),mean(listname[[1]]),var(listname[[1]])) 
+  tenstats <- c(min(listname[[2]]),max(listname[[2]]),mean(listname[[2]]),var(listname[[2]]))
+  twentyfivestats <- c(min(listname[[3]]),max(listname[[3]]),mean(listname[[3]]),var(listname[[3]]))   
+  fiftystats <- c(min(listname[[4]]),max(listname[[4]]),mean(listname[[4]]),var(listname[[4]]))   
+  eightystats <- c(min(listname[[5]]),max(listname[[5]]),mean(listname[[5]]),var(listname[[5]]))   
+  hundredstats <- c(min(listname[[6]]),max(listname[[6]]),mean(listname[[6]]),var(listname[[6]])) 
+  
+  #combine the 4 vectors into a dataframe so each vector is a column of the new dataframe
+  newdf <- cbind(onestats, tenstats, twentyfivestats, fiftystats, eightystats, hundredstats)
+  
+  # name the columns of the df
+  colnames(newdf)<- c('1% Sample', '10% Sample','25% Sample','50% Sample','80% Sample','100% Sample')
+  
+  # name the rows of the df
+  rownames(newdf) <- c('SampleMin','SampleMax','SampleMean','SampleVariance')
+ 
+  return(newdf)
+  }
+
+list_hist_grid <- function(listname,title='')
+  {
+    # list_hist_grid() accepts a LIST as a parameter like the list created by the samples() function. The parameter is assumed to be a list whose first column contains a random sample of 1% of the df column.  Column 2 will contain a 10% sample, column 3 will contain a 25% sample, column 4 will contain a 50% sample, column 5 will contain a 80% sample and column 6 will contain a 100% sample which is the original column.  The second parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  list_hist_grid() will create a grid of histograms.  There will be a total of 6 histograms, one for each sample. 
+
+  # create our bin widths by calculating the range and dividing it by 8 to get 8 bins
+    bin_one <- (max(listname[[1]])-min(listname[[1]]))/8
+    bin_ten <- (max(listname[[2]])-min(listname[[2]]))/8
+    bin_twentyfive <- (max(listname[[3]])-min(listname[[3]]))/8
+    bin_fifty <- (max(listname[[4]])-min(listname[[4]]))/8
+    bin_eighty <- (max(listname[[5]])-min(listname[[5]]))/8
+    bin_hundred <- (max(listname[[6]])-min(listname[[6]]))/8
+  
+  
+    # the code for each histogram will follow the same approach.  First we convert the 1st column of the parameter list to a data frame so we can use ggplot.  
+    onedf <- data.frame(listname[1])
+
+    # we assign a column name to our single column df
+    colnames(onedf) <-c("Sample")
+    
+    # create a plot from the new df. we use onedf as the input and the column data as the x axis .  We add a histogram layer with our binwidths created above.  I chose to make these histograms black outline with white fill.  We add a title layer.  The main title is the sample size and the subtitle is the optional parameter that the user can input  
+    hist_one <-ggplot(onedf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_one, colour="black", fill="white") +
+    ggtitle(sprintf("1%% Sample\n%s",title))
+
+  # the next 5 histograms follow the exact steps as we used for the first histogram.  We use column 2 of parameter listname to create a dataframe.  We give the data frame a column name and then create a plot with added layers of histogram and title.    
+    tendf <- data.frame(listname[2])
+    colnames(tendf) <-c("Sample")
+    hist_ten <-ggplot(tendf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_ten, colour="black", fill="white") +
+    ggtitle(sprintf("10%% Sample\n%s",title))
+    
+    twentyfivedf <- data.frame(listname[3])
+    colnames(twentyfivedf) <-c("Sample")
+    hist_twentyfive <-ggplot(twentyfivedf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_twentyfive, colour="black", fill="white") + ggtitle(sprintf("25%% Sample\n%s",title))
+    
+    fiftydf <- data.frame(listname[4])
+    colnames(fiftydf) <-c("Sample")
+    hist_fifty <-ggplot(fiftydf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_fifty, colour="black", fill="white") +
+    ggtitle(sprintf("50%% Sample\n%s",title))
+    
+    eightydf <- data.frame(listname[5])
+    colnames(eightydf) <-c("Sample")
+    hist_eighty <-ggplot(eightydf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_eighty, colour="black", fill="white") +
+    ggtitle(sprintf("80%% Sample\n%s",title))
+    
+    hundreddf <- data.frame(listname[6])
+    colnames(hundreddf) <-c("Sample")
+    hist_hundred <-ggplot(hundreddf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_hundred, colour="black", fill="white") +
+    ggtitle(sprintf("100%% Sample\n%s",title))
+
+    # use the grid.arrange() function from the gridExtra library to arrange the histograms into 3 rows and 2 columns.
+    grid.arrange(hist_one,hist_ten,hist_twentyfive,hist_fifty,hist_eighty,hist_hundred, ncol=2, nrow =3)
+ 
+    # return a NuLL value
+  return()  
+  }
+
+
+```
+```{r}
+sample1000 <- function(dfcolumn)
+  {
+  # sample1000() accepts a dataframe column in the format dfname$colname.  We then sample the dfcolumn 1000 times.  During each iteration, we perform samples of 5 different sizes (1%,10%,25%,50%,80%).  We take the mean of each sample and that mean becomes a row entry in a new dataframe.  Our new dataframe will have 5 columns (each for a different sample size) and 1000 rows (each for the mean of a different sample).
+
+  # convert df column into a data frame
+  df<- data.frame(dfcolumn)
+  
+  # initialize several new variables to the NULL value
+  answerone<-NULL
+  answerten<-NULL
+  answertwentyfive<-NULL
+  answerfifty<-NULL
+  answereighty<-NULL
+  
+  # inititae a for loop.  
+  for(i in 1:1000)
+    {
+
+    # each iteration of the loop will set a new seed so we have a different "random" sample each time
+    set.seed(i)
+
+    # each iteration we take a sample of n= 1% of the # of observations in the dataframe rounded to the nearest integer value without replacement.  We then take the mean of that sample and store it in a variable.  Finally, we bind our new variable as a row in a new data frame.  Each iteration will add another row  This means that each row in the "answer" data frame will be a mean from the sample.  Our loop executes 1000 times so each "answer" dataframe will have 1000 rows.
+    resultone <- mean(sample(dfcolumn,round((nrow(df))*.01),replace=FALSE))
+    answerone <- data.frame(rbind(answerone,resultone))
+
+    # the next four blocks of code follow the same logic as above.  we are building a separate dataframe for each sample size with 1 column and 1000 rows.  Every iteration of the loop adds the mean of the sample to a row.
+    
+    resultten <- mean(sample(dfcolumn,round((nrow(df))*.1),replace=FALSE))
+    answerten <- data.frame(rbind(answerten,resultten))
+  
+    resulttwentyfive <- mean(sample(dfcolumn,round((nrow(df))*.25),replace=FALSE))
+    answertwentyfive <- data.frame(rbind(answertwentyfive,resulttwentyfive))
+  
+    resultfifty <- mean(sample(dfcolumn,round((nrow(df))*.50),replace=FALSE))
+    answerfifty <- data.frame(rbind(answerfifty,resultfifty))
+  
+    resulteighty <- mean(sample(dfcolumn,round((nrow(df))*.80),replace=FALSE))
+    answereighty <- data.frame(rbind(answereighty,resulteighty))
+    }
+ 
+  # now that the loop is complete we have 5 single column dataframes each with 1000 rows.  We create the final dataframe constructed of the the 5 dataframes that we built in our loop.  The result is a 1000 x 5 data frame
+  
+  newdf <- cbind(answerone,answerten,answertwentyfive,answerfifty,answereighty)
+  # add column names to the new dataframe
+  colnames(newdf)<- c('1% Sample Means', '10% Sample Means','25% Sample Means','50% Sample Means','80% Sample Means')  
+  
+  return(newdf)
+  
+  }
+
+
+
+
+df_hist_grid <-function(df,dfcolumn,title='')
+  {
+  #accepts the df created by sample1000() and the dfcolumn from the original used as input for the sample1000() function.  The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms.  list_hist_grid() will create a grid of histograms.
+  
+  # df_hist_grid() creates histograms for each column in df and the dfcolumn
+  
+  # the input from sample1000() represents the means from each of 1000 samples taking from the original data (represented by dfcolumn).
+  
+  # create bin sizes, I chose to have 8 bins by dividing the range by 8
+    bin_one <- (max(df[1])-min(df[1]))/8
+    bin_ten <- (max(df[2])-min(df[2]))/8
+    bin_twentyfive <- (max(df[3])-min(df[3]))/8
+    bin_fifty <- (max(df[4])-min(df[4]))/8
+    bin_eighty <- (max(df[5])-min(df[5]))/8
+    bin_hundred <- (max(dfcolumn)-min(dfcolumn))/8
+
+    # The following 6 blocks of code follow the same process.  We create a new data frame for each column of the input dataframe df.  We add a title to the new dataframe.  We create a plot and then add the following layers: histgram - using our binwidths from above, I chose to use a red outline on these plots to help the reader distinguish between the plots of samples and the plots of means, Title- primary title and then an optional subtitle that can be entered as a parameter, Theme- this layer is necessary because I needed to control the font size.  My title is so large that when I allow ggplot to chose the size I get overlapping text
+    
+    onedf <- data.frame(df[1])
+    colnames(onedf) <-c("Sample")
+    hist_one <-ggplot(onedf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_one, colour="red", fill="white") +
+    ggtitle(sprintf("Distribution of Means of 1000 1%% Samples\n%s",title)) +
+    theme(plot.title = element_text(size = 8,colour="black"))
+
+    
+    tendf <- data.frame(df[2])
+    colnames(tendf) <-c("Sample")
+    hist_ten <-ggplot(tendf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_ten, colour="red", fill="white") +
+    ggtitle(sprintf("Distribution of Means of 1000 10%% Samples\n%s",title))+
+    theme(plot.title = element_text(size = 8,colour="black"))
+
+    
+    twentyfivedf <- data.frame(df[3])
+    colnames(twentyfivedf) <-c("Sample")
+    hist_twentyfive <-ggplot(twentyfivedf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_twentyfive, colour="red", fill="white") + ggtitle(sprintf("Distribution of Means of 1000 25%% Samples\n%s",title))+
+    theme(plot.title = element_text(size = 8,colour="black"))
+
+    
+    fiftydf <- data.frame(df[4])
+    colnames(fiftydf) <-c("Sample")
+    hist_fifty <-ggplot(fiftydf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_fifty, colour="red", fill="white") +
+    ggtitle(sprintf("Distribution of Means of 1000 50%% Samples\n%s",title))+
+    theme(plot.title = element_text(size = 8,colour="black"))
+
+    
+    eightydf <- data.frame(df[5])
+    colnames(eightydf) <-c("Sample")
+    hist_eighty <-ggplot(eightydf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_eighty, colour="red", fill="white") +
+    ggtitle(sprintf("Distribution of Means of 1000 80%% Samples\n%s",title))+
+    theme(plot.title = element_text(size = 8,colour="black"))
+    
+    hundreddf <- data.frame(dfcolumn)
+    colnames(hundreddf) <-c("Sample")
+    hist_hundred <-ggplot(hundreddf, aes(x=Sample)) +
+    geom_histogram(binwidth=bin_hundred, colour="red", fill="white") +
+    ggtitle(sprintf("100%% Sample\n%s",title))+
+    theme(plot.title = element_text(size = 8,colour="black"))
+    
+    # use the grid.arrange function to create the desired grid
+    
+    grid.arrange(hist_one,hist_ten,hist_twentyfive,hist_fifty,hist_eighty,hist_hundred, ncol=2, nrow =3)
+  
+  return()   
+  }  
+
+```
+```{r}
+sample1000Statistics <- function(sample1000df,dfcolumn,sampleStatisticsdf)
+  {
+  # sample1000Statistics() accepts three parameters. 
+  
+  #sample1000df is the dataframe returned by the sample1000() function. Sample1000() accepts a dataframe column in the format dfname$colname.  We then sample the dfcolumn 1000 times.  During each iteration, we perform samples of 5 different sizes (1%,10%,25%,50%,80%).  We take the mean of each sample and that mean becomes a row entry in a new dataframe.  Our new dataframe will have 5 columns (each for a different sample size) and 1000 rows (each for the mean of a different sample). 
+  
+  #dfcolumn is the second parameter.  dfcolumn is the original data that sample1000() performed all of its operations on
+  
+  #sampleStatisticsdf is the dataframe created by sampleStatistics(). sampleStatistics() accepted a list created by the function samples().  The parameter is assumed to be a list whose first column contains a random sample of 1% of the df column.  Column 2 will contain a 10% sample, column 3 will contain a 25% sample, column 4 will contain a 50% sample, column 5 will contain a 80% sample and column 6 will contain a 100% sample which is the original column.  sampleStatistics() returns a dataframe that has 4 rows and 6 columns.  Each column represents a samples size (1%,10%,25%,50%,80%,100%), and each row is a statistics (min,max,mean,variance). 
+  
+  #sample1000Statistics() calculates the min,max,mean, and variance of each column of sample1000df and dfcolumn and appends the results to sampleStatisticsdf.  
+
+  # create a new vector 4 elements long for each of our random sample vectors  
+  onestats <- c(min(sample1000df[[1]]),max(sample1000df[[1]]),mean(sample1000df[[1]]),var(sample1000df[[1]]))
+  
+  tenstats <- c(min(sample1000df[[2]]),max(sample1000df[[2]]),mean(sample1000df[[2]]),var(sample1000df[[2]]))
+  
+  twentyfivestats <- c(min(sample1000df[[3]]),max(sample1000df[[3]]),mean(sample1000df[[3]]),var(sample1000df[[3]]))
+  
+  fiftystats <- c(min(sample1000df[[4]]),max(sample1000df[[4]]),mean(sample1000df[[4]]),var(sample1000df[[4]]))
+  
+  eightystats <- c(min(sample1000df[[5]]),max(sample1000df[[5]]),mean(sample1000df[[5]]),var(sample1000df[[5]]))
+  
+  hundredstats <- c(min(dfcolumn),max(dfcolumn),mean(dfcolumn),var(dfcolumn)) 
+  
+  #combine the 4 vectors into a dataframe so each vector is a column of the new dataframe
+  newdf <- cbind(onestats, tenstats, twentyfivestats, fiftystats, eightystats, hundredstats)
+  
+
+  # name the rows of the df
+  rownames(newdf) <- c('ResampleMin','ResampleMax','ResampleMean','ResampleVariance')
+  answerdf <-rbind(sampleStatisticsdf,newdf)
+  return(answerdf)
+  }
+
+```
+
+```{r}
+
+hist_six <- function(sample1000Statisticsdf,dfcolumn,title='')
+  {
+  # hist_six is the histogram asked for in problem six.  It accepts three parameters:
+  # sample1000Statisticsdf is the dataframe returned by sample1000Statistics().  It contains 8 rows and 6 columns.  Each column represents a sample size (1%,10%,25%,80%,100%).  Each row represents a statistic (sample min, sample max, sample mean, sample variance, resample min, resample max, resample mean, resample variance).  In each case, the sample statistics are from a sample of n=(sample size given in the column) from the original dataframe dfcolumn.  The resample statistics are the means of 1000 samples of n=(sample size given in the column).
+  
+  # dfcolumn is the original dataframe column
+  
+  # The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms. 
+  
+  # hist_six() will create a histogram of 100% of the data and will overlay label lines that represent SampleMeans for each sample size.
+
+  # create bin sizes, we want 8 bins
+  bin_hundred <- (max(dfcolumn)-min(dfcolumn))/8
+
+  # ggplot2 works through data frames so I create a dataframe named vlines with the information that I want the vertical lines to be created with.  The first vector in the data frame contains the values and the second contains the labels that I want to appear in the legend.  I use the data.frame function.  I want the Sample Mean data which is in the third row of the sample1000Statisticsdf.  Then for each sample size I change the column i in the [3,i] code.  The i=2 is the Ssample mean for 10% samples size, i=3 is the 25% sample, etc.  The second vector SampleSize contains text of the Titles that I want in the legend.
+  
+  vlines <- data.frame(value = c(sample1000Statisticsdf[3,1],sample1000Statisticsdf[3,2],sample1000Statisticsdf[3,3],sample1000Statisticsdf[3,4],sample1000Statisticsdf[3,5],sample1000Statisticsdf[3,6]), SampleSize = c("1%", "10%","25%","50%","80%","100%"))
+
+  # convert or ensure that the dfcolumn is a dataframe
+  hundreddf <- data.frame(dfcolumn)
+  
+  # add a column name to the data frame  
+  colnames(hundreddf) <-c("Sample")
+
+  #create the plot using the 100% data data frame and mapping the aesthetic, add the histogram laeyr specifying bin width and color, add the title layer, add the vertical line layer using the new dataframe we created at the beginning of this function. We specify where the data comes from, that we want a line at each "value" in the first vector of the data frame, the color will be different for each entry and the legend will show us the color matched with our entry in the second vector of our data frame.
+  hist_hundred <-ggplot(hundreddf, aes(x=Sample)) +
+      geom_histogram(binwidth=bin_hundred, colour="black", fill="gray") + ggtitle(sprintf("100%% Sample With Means From Samples\n%s",title)) + geom_vline(data=vlines,aes(xintercept=value, colour=SampleSize), size=1.15, linetype="F1", show_guide=TRUE)
+      
+  
+    print(hist_hundred)
+    
+    return(NULL)
+    }
+```
+
+```{r}
+
+hist_seven <- function(sample1000Statisticsdf,dfcolumn,title='')
+  {
+  # hist_seven is the histogram asked for in problem seven.  It accepts three parameters:
+  # sample1000Statisticsdf is the dataframe returned by sample1000Statistics().  It contains 8 rows and 6 columns.  Each column represents a sample size (1%,10%,25%,80%,100%).  Each row represents a statistic (sample min, sample max, sample mean, sample variance, resample min, resample max, resample mean, resample variance).  In each case, the sample statistics are from a sample of n=(sample size given in the column) from the original dataframe dfcolumn.  The resample statistics are the means of 1000 samples of n=(sample size given in the column).
+  
+  # dfcolumn is the original dataframe column
+  
+  # The third parameter TITLE defaults to blank.  This parameter gives the user an opportunity to enter a subtitle that will appear on line 2 of the histograms.  The intent is that the name of the data is used as the title so a reader can tell what data is being used to create the histograms. 
+  
+  # hist_seven() will create a histogram of 100% of the data and will overlay label lines that represent ResampleMeans for each sample size.
+
+  # create bin sizes, we want 8 bins
+  bin_hundred <- (max(dfcolumn)-min(dfcolumn))/8
+
+  # ggplot2 works through data frames so I create a dataframe with the information that I want the vertical lines to be created with.  The first vector in the data frame contains the values and the second contains the labels that I want to appear in the legend.  I use the data.frame function.  I want the Resample Mean data which is in the seventh row of the sample1000Statisticsdf.  Then for each sample size I change the column i in the [7,i] code.  The i=2 is the Resample mean for 10% samples size, i=3 is the 25% sample, etc.  The second vector SampleSize contains text of the Titles that I want in the legend.
+  
+  vlines <- data.frame(value = c(sample1000Statisticsdf[7,1],sample1000Statisticsdf[7,2],sample1000Statisticsdf[7,3],sample1000Statisticsdf[7,4],sample1000Statisticsdf[7,5],sample1000Statisticsdf[7,6]), SampleSize = c("1%", "10%","25%","50%","80%","100%"))
+
+  # convert or ensure that we have a dataframe to work with
+  hundreddf <- data.frame(dfcolumn)
+  
+  # add a column name to the data frame  
+  colnames(hundreddf) <-c("Sample")
+
+  #create the plot using the 100% data data frame and mapping the aesthetic, add the histogram laeyr specifying bin width and color, add the title layer, add the vertical line layer using the new dataframe we created at the beginning of this function. We specify where the data comes from, that we want a line at each "value" in the first vector of the data frame, the color will be different for each entry and the legend will show us the color matched with our entry in the second vector of our data frame.
+  hist_hundred <-ggplot(hundreddf, aes(x=Sample)) +
+      geom_histogram(binwidth=bin_hundred, colour="steelblue", fill="gray") + ggtitle(sprintf("100%% Sample With Resample Means\n%s",title)) + geom_vline(data=vlines,aes(xintercept=value, colour=SampleSize), size=1.00, linetype="F1", show_guide=TRUE)
+      
+  
+    print(hist_hundred)
+    
+    return(NULL)
+    }
+```
+
+```{r}
+test <- function(dfcolumn,title='')
+  {
+  # test() accepts two parameters: dfcolumn - a column from a dataframe; and title- defaults to black and gives the user the option of having a subtitle
+  
+  # test() calls all of the previously created fucntions to solve the problems given on the test.  The variables below are created to store each question.
+  p1 <- samples(dfcolumn)
+  p1b <- sampleStatistics(p1)
+  print(p1b)
+  p2 <- list_hist_grid(p1,title)
+  p3 <- sample1000(dfcolumn)
+  p4 <- df_hist_grid(p3,dfcolumn,title)
+  p5 <- sample1000Statistics(p3,dfcolumn,p1b)
+  print(p5)
+  p6 <- hist_six(p5,dfcolumn,title)
+  p7 <- hist_seven(p5,dfcolumn,title)
+  
+  return(NULL)
+  }
+
+# we create 3 global variables that store info for 3 parts of the test
+problems1_7 <- test(abalone$Whole_wgt,title="abalone$Whole_wgt Dataset")
+problem8 <- test(diamonds$carat,title="diamonds$carat Dataset")
+problem9 <- test(faithful$eruptions,title="faithful$eruptions Dataset")
+
+```
+```{r}
+
+```
+
