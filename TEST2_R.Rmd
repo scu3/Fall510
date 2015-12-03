@@ -29,15 +29,15 @@ hist_seven()- is the histogram asked for in problem seven.  It accepts three par
 
 test()-  accepts two parameters: dfcolumn - a column from a dataframe; and title- defaults to black and gives the user the option of having a subtitle.  test() calls all of the previously created fucntions to solve the problems given on the test.  The variables below are created to store each question.
 
-To complete tis assingment I created four global variables.
+To complete tis assingment I created one global variable and three function calls.
 
 (1)  abalone - a dataframe that is used as a parameter throughout the assignment
 
-(2) problems1_7 - calls the test() fucntion on the abalone$Whole_wgt dataframe and stores the information
+(2) problems1_7 - call the test() fucntion on the abalone$Whole_wgt dataframe and stores the information
 
-(3) problem8 - calls the test() function on the diamonds$carat dataframe and stores the information
+(3) problem8a - call the test() function on the diamonds$carat dataframe and stores the information
 
-(4) problem9 - calls the test() function on the faithful$eruptions dataframe and stores the information (this was acutally the second part of question 8)
+(4) problem8b - call the test() function on the faithful$eruptions dataframe and stores the information (this was acutally the second part of question 8)
 
 Question (9) - The test asks us to provide a brief explanation of what we observed in the measures and histograms as it relates to the sample size and resampling.
 
@@ -461,14 +461,23 @@ test <- function(dfcolumn,title='')
   
   return(NULL)
   }
+# we create 3 function calls to answer the problems on the test. 
 
-# we create 3 global variables that store info for 3 parts of the test
-problems1_7 <- test(abalone$Whole_wgt,title="abalone$Whole_wgt Dataset")
-problem8 <- test(diamonds$carat,title="diamonds$carat Dataset")
-problem9 <- test(faithful$eruptions,title="faithful$eruptions Dataset")
+# answer problems 1-7
+test(abalone$Whole_wgt,title="abalone$Whole_wgt Dataset")
+
+# answer the first part of 8
+test(diamonds$carat,title="diamonds$carat Dataset")
+
+# answer the last part of 8
+test(faithful$eruptions,title="faithful$eruptions Dataset")
 
 ```
-```{r}
 
-```
+Question (9) - The test asks us to provide a brief explanation of what we observed in the measures and histograms as it relates to the sample size and resampling.
 
+For the first grid of histograms, where we were taking single samples of 1%,10%,25%, and 80%, we saw that the distriubtions of each sample became closer and closer to the actual distribution (shown by the 100% sample) as the sample size increased.
+
+For the second second grid of histomgrams, where we were plotting the means of 1000 samples, we saw that as the sample size increased, the distributions of the means became increasing normal (as in the normal distribution).
+
+Finally, on the histograms created in problems 6 and 7, we see that the means of the samples are kind of close to the actual mean but the Resample means are approxmimately equal to the actual mean.
