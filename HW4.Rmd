@@ -51,13 +51,16 @@ c(rep(c(4,6,3),10))
 # We create the vector (4,6,3,4,6,3...4,6,3,4) where there are 11 occurrences of 4, 10 occurrences of 6, and 10 occurrences of 3. Similar to 1c, we create our vector using the c() function.  To get a sequence of 11 repeates of 4,6,3 we use the rep(c(4,6,3),11) function where 11 tells R to repeat the first arguement 11 times.  The problem is that this results in a vector with 33 elements.  Our vector has the 11 occurrences of 4 that we desired but it also has 11 occurrences of 6 and 11 occurences of 3.  To remedy this we add the [-32:-33] at the end of the statement.  This [start,stop] syntax operates on index positions.  It is worth noting that in R, the first index position is 1 (not 0) and the stop position is included in the operation.  The negative sign indicates to R that we want to remove the items in index position 32 through 33 (inlcusive).
 
 c(rep(c(4,6,3),11))[-32:-33]
+# SW: many ways to do this, including
+rep(c(4,6,3), length.out = 31)
 ```
 ###__1(g):__
 ```{r}
 # We create the vector (4,4,...4,6,6,...6,3,3,...3) where there are 10 occurrences of 4, 20 occurrences of 6, and 30 occurrences of 3.  To accomplish this, we employ the c() function to create the vector.  We will call the rep(x,times) function 3 separate times where x will be the vectors c(4), c(6), and C(3) that we want to create and times will be 10,20,and 30, respectively, to indicate how many times we want each vector repeated.
 
 c(rep(c(4),10),rep(c(6),20),rep(c(3),30))
-
+# SW: here's another way
+rep(c(4,6,3),10 * 1:3)
 ```
 ##__Problem 2:__
 ```{r}
@@ -139,7 +142,7 @@ sum( ((2^i)/i) + (3^i)/i^2 )
 # Our task is to create ("fn1","fn2", ...,"fn30").  The big difference between this and part 5a is that there is no space between the letters and the number.  We could have used the paste0() function to create the character vector ("fn1","fn2",...,"fn30").  This function works the same as paste() function except it removes the space between the fn and the number.  Since we were asked to use the paste() function we will set our sep arguemnt equal to '' to remove the space.
 
 paste("fn",1:30,sep='')
-
+# SW: see also paste0()
 ```
 
 ##__Problem 6:__
@@ -253,7 +256,9 @@ yVec[seq(1,250,3)]
 # we want to calculate 1 + 2/3 + (2*4)/(3*5) + ... + (2*4*...*38)/(3*5*...*39).  If you take the first term of this sequence away, the numerator becomes the cumulative product of the sequence 2,4,6,...,38.  The denominator becomes the cumulative product of the sequence 3,5,7,...,39.  The cumprod() function accepts a vector and multiplies each term by the product of the preceeding terms.  Then the answer to our question is that we want the sum of 1 + the cumulative product of our numerator/ the cumulative product of our denominator.
 
 sum(1 + cumprod(seq(2,38,2))/cumprod(seq(3,39,2)))
-
+# SW: lost points: the summand is not correct, you are adding 1 to _every_ 
+# element of the vector, but you should add it just once
+sum(c(1,cumprod(seq(2, 38, 2) / seq(3, 39, 2))))
 ```
 
 
