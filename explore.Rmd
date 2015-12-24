@@ -4,6 +4,9 @@ author: "Sean Underwood"
 date: "Saturday, October 17, 2015"
 output: html_document
 ---
+
+SW: excellent work, only one comment: your `explore` function should explicitly return a value. it calls `explorelist`, which returns a value, and you can return that from `explore` using another call to `return`.
+
 We create a function explore(df,binvect,corrthresh) that accepts three arguements:
 
   (1) df- an arbitrary data frame
